@@ -1,0 +1,22 @@
+{
+  "name": "appscript-squadtd",
+  "version": "1.0.0",
+  "description": "App Script for SquadronTD spreadsheets",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hodor/appscript-squadtd.git"
+  },
+  "author": "Rogerio Tavares Gasi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hodor/appscript-squadtd/issues"
+  },
+  "homepage": "https://github.com/hodor/appscript-squadtd#readme",
+  "dependencies": {
+    "gulp": "^3.9.1"
+  }
+}
