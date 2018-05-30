@@ -1,3 +1,14 @@
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var squadtd;
 (function (squadtd) {
     var Calculator = (function () {
@@ -86,6 +97,111 @@ var squadtd;
     }());
     squadtd.Calculator = Calculator;
 })(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var Unit = (function () {
+        function Unit(name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
+            this._life = 0;
+            this._name = name;
+            this._life = life;
+            this._armorType = armorType;
+            this._attackType = attackType;
+            this._minAttack = minAttack;
+            this._maxAttack = maxAttack;
+            this._attackSpeed = attackSpeed;
+            this._moveSpeed = moveSpeed;
+            this._range = range;
+        }
+        Unit.prototype.DPS = function () {
+            return squadtd.Calculator.DPS(this._minAttack, this._maxAttack, this._attackSpeed);
+        };
+        Unit.prototype.Name = function () {
+            return this._name;
+        };
+        Unit.prototype.Life = function () {
+            return this._life;
+        };
+        Unit.prototype.MoveSpeed = function () {
+            return this._moveSpeed;
+        };
+        Unit.prototype.Range = function () {
+            return this._range;
+        };
+        Unit.prototype.AttackMin = function () {
+            return this._minAttack;
+        };
+        Unit.prototype.AttackMax = function () {
+            return this._maxAttack;
+        };
+        Unit.prototype.AttackSpeed = function () {
+            return this._attackSpeed;
+        };
+        Unit.prototype.AttackType = function () {
+            return this._attackType;
+        };
+        Unit.prototype.ArmorType = function () {
+            return this._armorType;
+        };
+        return Unit;
+    }());
+    squadtd.Unit = Unit;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var WaveUnit = (function (_super) {
+        __extends(WaveUnit, _super);
+        function WaveUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
+            var _this = _super.call(this, name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
+            _this._wave = wave;
+            _this._reward = reward;
+            return _this;
+        }
+        WaveUnit.prototype.Wave = function () {
+            return this._wave;
+        };
+        WaveUnit.prototype.Reward = function () {
+            return this._reward;
+        };
+        return WaveUnit;
+    }(squadtd.Unit));
+    squadtd.WaveUnit = WaveUnit;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var WaveFacade = (function () {
+        function WaveFacade() {
+        }
+        WaveFacade.GetWaveReward = function (wave) {
+            var reward = this.startWaveReward;
+            if (wave == 1)
+                return reward;
+            for (var i = 1; i < wave + 1; i++) {
+                if (i - 1 == 0)
+                    continue;
+                reward += (i - 1) % 3 == 0 ? 1 : 2;
+            }
+            return reward;
+        };
+        WaveFacade.Terraton = function (wave) {
+            var upgrade = wave - 30;
+            if (upgrade <= 0)
+                throw Utilities.formatString('Cannot create Terratron on wave %s. Minimum Wave is 31', wave);
+            upgrade -= 1;
+            var baseLife = 5804;
+            var baseMinAtk = 248;
+            var baseAtkDiff = 21;
+            var hpPerUpgrade = 267;
+            var atkPerUpgrade = 2.34;
+            var life = baseLife + (hpPerUpgrade * upgrade);
+            var atkMin = baseMinAtk + (Math.floor(atkPerUpgrade * upgrade));
+            var atkMax = atkMin + baseAtkDiff;
+            return new squadtd.WaveUnit("Terraton", wave, 0, life, squadtd.UnitType.biological, squadtd.DamageType.chaos, atkMin, atkMax, 1, 4, 2.25);
+        };
+        WaveFacade.startWaveReward = 13;
+        return WaveFacade;
+    }());
+    squadtd.WaveFacade = WaveFacade;
+})(squadtd || (squadtd = {}));
 function getBaseDamage(damageType, unitType) {
     squadtd.Validator.Validate([[damageType, 'string'], [unitType, 'string']]);
     return squadtd.Calculator.baseDamage(damageType, unitType);
@@ -113,6 +229,19 @@ function vetSpeed(ammount, wave) {
 function waveReward(wave) {
     squadtd.Validator.Validate([[wave, 'number']]);
     return squadtd.WaveFacade.GetWaveReward(wave);
+}
+function terratron(wave) {
+    squadtd.Validator.Validate([[wave, 'number']]);
+    var terra = squadtd.WaveFacade.Terraton(wave);
+    var answer = new Array();
+    answer.push(new Array());
+    answer[0].push(terra.Life());
+    answer[0].push(terra.MoveSpeed());
+    answer[0].push(terra.Range());
+    answer[0].push(terra.AttackMin());
+    answer[0].push(terra.AttackMax());
+    answer[0].push(terra.AttackSpeed());
+    return answer;
 }
 var squadtd;
 (function (squadtd) {
@@ -190,22 +319,37 @@ var squadtd;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
-    var WaveFacade = (function () {
-        function WaveFacade() {
+    var VeteranUnit = (function (_super) {
+        __extends(VeteranUnit, _super);
+        function VeteranUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
+            var _this = _super.call(this, name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
+            var vetSpeed = squadtd.Veteran.GetSpeed(_this._attackSpeed, _this._wave);
+            var vetMinAtk = squadtd.Veteran.GetDamage(_this._minAttack, _this._wave);
+            var vetMaxAtk = squadtd.Veteran.GetDamage(_this._maxAttack, _this._wave);
+            var vetLife = squadtd.Veteran.GetLife(_this._life, _this._wave);
+            _this._bonusMaxAttack = vetMaxAtk - _this._maxAttack;
+            _this._bonusMinAttack = vetMinAtk - _this._minAttack;
+            _this._bonusLife = vetLife - _this._life;
+            _this._bonusAttackSpeed = _this._attackSpeed - vetSpeed;
+            _this._maxAttack = vetMaxAtk;
+            _this._minAttack = vetMinAtk;
+            _this._attackSpeed = vetSpeed;
+            _this._life = vetLife;
+            return _this;
         }
-        WaveFacade.GetWaveReward = function (wave) {
-            var reward = this.startWaveReward;
-            if (wave == 1)
-                return reward;
-            for (var i = 1; i < wave + 1; i++) {
-                if (i - 1 == 0)
-                    continue;
-                reward += (i - 1) % 3 == 0 ? 1 : 2;
-            }
-            return reward;
+        VeteranUnit.prototype.BonusAttackMin = function () {
+            return this._bonusMinAttack;
         };
-        WaveFacade.startWaveReward = 13;
-        return WaveFacade;
-    }());
-    squadtd.WaveFacade = WaveFacade;
+        VeteranUnit.prototype.BonusAttackMax = function () {
+            return this._bonusMaxAttack;
+        };
+        VeteranUnit.prototype.BonusAttackSpeed = function () {
+            return this._bonusAttackSpeed;
+        };
+        VeteranUnit.prototype.BonusLife = function () {
+            return this._bonusLife;
+        };
+        return VeteranUnit;
+    }(squadtd.WaveUnit));
+    squadtd.VeteranUnit = VeteranUnit;
 })(squadtd || (squadtd = {}));

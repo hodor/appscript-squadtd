@@ -1,3 +1,4 @@
+/// <reference path="wave/waveFacade.ts"/>
 //// DAMAGE
 function getBaseDamage(damageType: string, unitType: string) {
   squadtd.Validator.Validate([[damageType, 'string'], [unitType,'string']]);
@@ -31,8 +32,21 @@ function vetSpeed(ammount:number, wave:number) {
 }
 
 //// WAVE
-
 function waveReward(wave:number) {
   squadtd.Validator.Validate([[wave, 'number']]);
   return squadtd.WaveFacade.GetWaveReward(wave);
+}
+
+function terratron(wave:number){
+  squadtd.Validator.Validate([[wave, 'number']]);
+  let terra:squadtd.WaveUnit = squadtd.WaveFacade.Terraton(wave)
+  let answer:Array<number[]> = new Array<number[]>();
+  answer.push(new Array());
+  answer[0].push(terra.Life());
+  answer[0].push(terra.MoveSpeed());
+  answer[0].push(terra.Range());
+  answer[0].push(terra.AttackMin());
+  answer[0].push(terra.AttackMax());
+  answer[0].push(terra.AttackSpeed());
+  return answer;
 }
