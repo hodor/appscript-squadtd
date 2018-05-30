@@ -18,17 +18,17 @@ function getDPSCostBenefit(cost:number, supply:number, dps:number){
 //// VETERAN
 function vetDamage(ammount:number, wave:number) {
   squadtd.Validator.Validate([[ammount, 'number'], [wave,'number']]);
-  return squadtd.Veteran.GetDamage(ammount, wave);
+  return squadtd.VeteranUnit.GetDamage(ammount, wave);
 }
 
 function vetLife(ammount:number, wave:number) {
   squadtd.Validator.Validate([[ammount, 'number'], [wave,'number']]);
-  return squadtd.Veteran.GetLife(ammount, wave);
+  return squadtd.VeteranUnit.GetLife(ammount, wave);
 }
 
 function vetSpeed(ammount:number, wave:number) {
   squadtd.Validator.Validate([[ammount, 'number'], [wave,'number']]);
-  return squadtd.Veteran.GetSpeed(ammount, wave);
+  return squadtd.VeteranUnit.GetSpeed(ammount, wave);
 }
 
 //// WAVE
