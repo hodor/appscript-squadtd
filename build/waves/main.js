@@ -98,6 +98,22 @@ function getDPSCostBenefit(cost, supply, dps) {
     squadtd.Validator.Validate([[cost, 'number'], [supply, 'number'], [dps, 'number']]);
     return squadtd.Calculator.DPSCostBenefit(cost, supply, dps);
 }
+function vetDamage(ammount, wave) {
+    squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
+    return squadtd.Veteran.GetDamage(ammount, wave);
+}
+function vetLife(ammount, wave) {
+    squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
+    return squadtd.Veteran.GetLife(ammount, wave);
+}
+function vetSpeed(ammount, wave) {
+    squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
+    return squadtd.Veteran.GetSpeed(ammount, wave);
+}
+function waveReward(wave) {
+    squadtd.Validator.Validate([[wave, 'number']]);
+    return squadtd.WaveFacade.GetWaveReward(wave);
+}
 var squadtd;
 (function (squadtd) {
     var Validator = (function () {
@@ -124,6 +140,34 @@ var squadtd;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
+    var Veteran = (function () {
+        function Veteran() {
+        }
+        Veteran.GetDamage = function (damage, wave) {
+            var bonus = wave * this.damagePerWave;
+            return damage * (1 + bonus);
+        };
+        Veteran.GetLife = function (life, wave) {
+            var bonus = wave * this.hpPerWave;
+            var total = life * (1 + bonus);
+            if (wave <= 3)
+                return Math.floor(total);
+            return Math.ceil(total);
+        };
+        Veteran.GetSpeed = function (speed, wave) {
+            var bonus = wave * this.speedPerWave;
+            var total = speed * (1 - bonus);
+            return Number(total.toFixed(2));
+        };
+        Veteran.damagePerWave = .02;
+        Veteran.hpPerWave = .02;
+        Veteran.speedPerWave = .01;
+        return Veteran;
+    }());
+    squadtd.Veteran = Veteran;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
     var DamageType;
     (function (DamageType) {
         DamageType["normal"] = "NORMAL";
@@ -143,4 +187,25 @@ var squadtd;
         UnitType["mechanical"] = "MECHANICAL";
         UnitType["biological"] = "BIOLOGICAL";
     })(UnitType = squadtd.UnitType || (squadtd.UnitType = {}));
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var WaveFacade = (function () {
+        function WaveFacade() {
+        }
+        WaveFacade.GetWaveReward = function (wave) {
+            var reward = this.startWaveReward;
+            if (wave == 1)
+                return reward;
+            for (var i = 1; i < wave + 1; i++) {
+                if (i - 1 == 0)
+                    continue;
+                reward += (i - 1) % 3 == 0 ? 1 : 2;
+            }
+            return reward;
+        };
+        WaveFacade.startWaveReward = 13;
+        return WaveFacade;
+    }());
+    squadtd.WaveFacade = WaveFacade;
 })(squadtd || (squadtd = {}));
