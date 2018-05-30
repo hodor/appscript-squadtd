@@ -82,7 +82,12 @@ namespace squadtd {
     }
 
     public static DPS(damageMin: number, damageMax: number, speed: number): number {
-      return ((damageMin + damageMax) / 2) * speed;
+      // Speed is 1 - 1second, 0.2 - 200ms
+      return ((damageMin + damageMax) / 2) / speed;
+    }
+
+    public static DPSCostBenefit(cost: number, supply:number, dps:number): number {
+      return (dps*dps) / cost;
     }
   }
 }
