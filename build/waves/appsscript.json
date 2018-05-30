@@ -1,11 +1,6 @@
 {
   "timeZone": "America/Sao_Paulo",
   "dependencies": {
-    "libraries": [{
-      "userSymbol": "SquadronTD",
-      "libraryId": "1XqCt7x_dRRvEyBKqX7kZpELax65NmuMEIXuj80rRxlNXW8eoWdO2cNS7",
-      "version": "1"
-    }]
   },
   "exceptionLogging": "STACKDRIVER"
 }
