@@ -22,44 +22,37 @@ namespace squadtd {
       return Number(total.toFixed(2));
     }
     
-    _bonusMaxAttack:number;
-    _bonusMinAttack:number;
-    _bonusAttackSpeed:number;
-    _bonusLife:number;
+    public bonusMaxAttack:number;
+    public bonusMinAttack:number;
+    public bonusAttackSpeed:number;
+    public bonusLife:number;
 
-    constructor(name:string, wave:number, reward:number, life:number, armorType:UnitType, 
-      attackType:DamageType, minAttack:number, maxAttack:number, 
-      attackSpeed:number, moveSpeed:number, range:number) {
+    constructor(name?:string, wave?:number, reward?:number, life?:number, armorType?:UnitType, 
+      attackType?:DamageType, minAttack?:number, maxAttack?:number, 
+      attackSpeed?:number, moveSpeed?:number, range?:number) {
         super(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range);
-        let vetSpeed = VeteranUnit.GetSpeed(this._attackSpeed, this._wave);
-        let vetMinAtk = VeteranUnit.GetDamage(this._minAttack, this._wave);
-        let vetMaxAtk = VeteranUnit.GetDamage(this._maxAttack, this._wave);
-        let vetLife = VeteranUnit.GetLife(this._life, this._wave);
-        this._bonusMaxAttack = vetMaxAtk - this._maxAttack;
-        this._bonusMinAttack = vetMinAtk - this._minAttack;
-        this._bonusLife = vetLife - this._life;
-        this._bonusAttackSpeed = this._attackSpeed - vetSpeed;
-        this._maxAttack = vetMaxAtk;
-        this._minAttack = vetMinAtk;
-        this._attackSpeed = vetSpeed;
-        this._life = vetLife;
+        this.setupVeteranData(this.wave, this.attackSpeed, this.minAttack, this.maxAttack, this.life);
       }
 
-      public BonusAttackMin():number {
-        return this._bonusMinAttack;
-      }
-
-      public BonusAttackMax():number {
-        return this._bonusMaxAttack;
-      }
-
-      public BonusAttackSpeed():number {
-        return this._bonusAttackSpeed;
-      }
-
-      public BonusLife():number {
-        return this._bonusLife;
-      }
+    private setupVeteranData(wave:number, atkSpeed:number, min:number, max:number, life:number) {
+      let vetSpeed = VeteranUnit.GetSpeed(atkSpeed, wave);
+      let vetMinAtk = VeteranUnit.GetDamage(min, wave);
+      let vetMaxAtk = VeteranUnit.GetDamage(max, wave);
+      let vetLife = VeteranUnit.GetLife(life, wave);
+      this.bonusMaxAttack = vetMaxAtk - this.maxAttack;
+      this.bonusMinAttack = vetMinAtk - this.minAttack;
+      this.bonusLife = vetLife - this.life;
+      this.bonusAttackSpeed = this.attackSpeed - vetSpeed;
+      this.maxAttack = vetMaxAtk;
+      this.minAttack = vetMinAtk;
+      this.attackSpeed = vetSpeed;
+      this.life = vetLife;
+    }
+    
+    public copyFrom(other:WaveUnit){
+      super.copyFrom(other);
+      this.setupVeteranData(other.wave, other.attackSpeed, other.minAttack, other.maxAttack, other.life);
+    }
 
   }
 }

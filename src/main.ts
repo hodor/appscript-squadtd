@@ -39,14 +39,14 @@ function waveReward(wave:number) {
 
 function terratron(wave:number){
   squadtd.Validator.Validate([[wave, 'number']]);
-  let terra:squadtd.WaveUnit = squadtd.WaveFacade.Terraton(wave)
-  let answer:Array<number[]> = new Array<number[]>();
+  let terratron:squadtd.WaveUnit = squadtd.WaveFacade.Terratron(wave)
+  let answer:Array<any> = new Array();
   answer.push(new Array());
-  answer[0].push(terra.Life());
-  answer[0].push(terra.MoveSpeed());
-  answer[0].push(terra.Range());
-  answer[0].push(terra.AttackMin());
-  answer[0].push(terra.AttackMax());
-  answer[0].push(terra.AttackSpeed());
+  answer[0].push(terratron.life);
+  answer[0].push(terratron.moveSpeed);
+  answer[0].push(terratron.range);
+  answer[0].push(terratron.minAttack);
+  answer[0].push(terratron.maxAttack);
+  answer[0].push(terratron.attackSpeed);
   return answer;
 }

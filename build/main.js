@@ -101,46 +101,30 @@ var squadtd;
 (function (squadtd) {
     var Unit = (function () {
         function Unit(name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
-            this._life = 0;
-            this._name = name;
-            this._life = life;
-            this._armorType = armorType;
-            this._attackType = attackType;
-            this._minAttack = minAttack;
-            this._maxAttack = maxAttack;
-            this._attackSpeed = attackSpeed;
-            this._moveSpeed = moveSpeed;
-            this._range = range;
+            this.life = 0;
+            this.name = name;
+            this.life = life;
+            this.armorType = armorType;
+            this.attackType = attackType;
+            this.minAttack = minAttack;
+            this.maxAttack = maxAttack;
+            this.attackSpeed = attackSpeed;
+            this.moveSpeed = moveSpeed;
+            this.range = range;
         }
         Unit.prototype.DPS = function () {
-            return squadtd.Calculator.DPS(this._minAttack, this._maxAttack, this._attackSpeed);
+            return squadtd.Calculator.DPS(this.minAttack, this.maxAttack, this.attackSpeed);
         };
-        Unit.prototype.Name = function () {
-            return this._name;
-        };
-        Unit.prototype.Life = function () {
-            return this._life;
-        };
-        Unit.prototype.MoveSpeed = function () {
-            return this._moveSpeed;
-        };
-        Unit.prototype.Range = function () {
-            return this._range;
-        };
-        Unit.prototype.AttackMin = function () {
-            return this._minAttack;
-        };
-        Unit.prototype.AttackMax = function () {
-            return this._maxAttack;
-        };
-        Unit.prototype.AttackSpeed = function () {
-            return this._attackSpeed;
-        };
-        Unit.prototype.AttackType = function () {
-            return this._attackType;
-        };
-        Unit.prototype.ArmorType = function () {
-            return this._armorType;
+        Unit.prototype.copyFrom = function (other) {
+            this.name = other.name;
+            this.life = other.life;
+            this.armorType = other.armorType;
+            this.attackType = other.attackType;
+            this.minAttack = other.minAttack;
+            this.maxAttack = other.maxAttack;
+            this.attackSpeed = other.attackSpeed;
+            this.moveSpeed = other.moveSpeed;
+            this.range = other.range;
         };
         return Unit;
     }());
@@ -152,15 +136,14 @@ var squadtd;
         __extends(WaveUnit, _super);
         function WaveUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
             var _this = _super.call(this, name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
-            _this._wave = wave;
-            _this._reward = reward;
+            _this.wave = wave;
+            _this.reward = reward;
             return _this;
         }
-        WaveUnit.prototype.Wave = function () {
-            return this._wave;
-        };
-        WaveUnit.prototype.Reward = function () {
-            return this._reward;
+        WaveUnit.prototype.copyFrom = function (other) {
+            _super.prototype.copyFrom.call(this, other);
+            this.wave = other.wave;
+            this.reward = other.reward;
         };
         return WaveUnit;
     }(squadtd.Unit));
@@ -182,7 +165,7 @@ var squadtd;
             }
             return reward;
         };
-        WaveFacade.Terraton = function (wave) {
+        WaveFacade.Terratron = function (wave) {
             var upgrade = wave - 30;
             if (upgrade <= 0)
                 throw Utilities.formatString('Cannot create Terratron on wave %s. Minimum Wave is 31', wave);
@@ -195,7 +178,7 @@ var squadtd;
             var life = baseLife + (hpPerUpgrade * upgrade);
             var atkMin = baseMinAtk + (Math.floor(atkPerUpgrade * upgrade));
             var atkMax = atkMin + baseAtkDiff;
-            return new squadtd.WaveUnit("Terraton", wave, 0, life, squadtd.UnitType.biological, squadtd.DamageType.chaos, atkMin, atkMax, 1, 4, 2.25);
+            return new squadtd.WaveUnit("Terratron", wave, 0, life, squadtd.UnitType.biological, squadtd.DamageType.chaos, atkMin, atkMax, 1, 4, 2.25);
         };
         WaveFacade.startWaveReward = 13;
         return WaveFacade;
@@ -216,15 +199,15 @@ function getDPSCostBenefit(cost, supply, dps) {
 }
 function vetDamage(ammount, wave) {
     squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
-    return squadtd.Veteran.GetDamage(ammount, wave);
+    return squadtd.VeteranUnit.GetDamage(ammount, wave);
 }
 function vetLife(ammount, wave) {
     squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
-    return squadtd.Veteran.GetLife(ammount, wave);
+    return squadtd.VeteranUnit.GetLife(ammount, wave);
 }
 function vetSpeed(ammount, wave) {
     squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
-    return squadtd.Veteran.GetSpeed(ammount, wave);
+    return squadtd.VeteranUnit.GetSpeed(ammount, wave);
 }
 function waveReward(wave) {
     squadtd.Validator.Validate([[wave, 'number']]);
@@ -232,15 +215,15 @@ function waveReward(wave) {
 }
 function terratron(wave) {
     squadtd.Validator.Validate([[wave, 'number']]);
-    var terra = squadtd.WaveFacade.Terraton(wave);
+    var terratron = squadtd.WaveFacade.Terratron(wave);
     var answer = new Array();
     answer.push(new Array());
-    answer[0].push(terra.Life());
-    answer[0].push(terra.MoveSpeed());
-    answer[0].push(terra.Range());
-    answer[0].push(terra.AttackMin());
-    answer[0].push(terra.AttackMax());
-    answer[0].push(terra.AttackSpeed());
+    answer[0].push(terratron.life);
+    answer[0].push(terratron.moveSpeed);
+    answer[0].push(terratron.range);
+    answer[0].push(terratron.minAttack);
+    answer[0].push(terratron.maxAttack);
+    answer[0].push(terratron.attackSpeed);
     return answer;
 }
 var squadtd;
@@ -266,34 +249,6 @@ var squadtd;
         return Validator;
     }());
     squadtd.Validator = Validator;
-})(squadtd || (squadtd = {}));
-var squadtd;
-(function (squadtd) {
-    var Veteran = (function () {
-        function Veteran() {
-        }
-        Veteran.GetDamage = function (damage, wave) {
-            var bonus = wave * this.damagePerWave;
-            return damage * (1 + bonus);
-        };
-        Veteran.GetLife = function (life, wave) {
-            var bonus = wave * this.hpPerWave;
-            var total = life * (1 + bonus);
-            if (wave <= 3)
-                return Math.floor(total);
-            return Math.ceil(total);
-        };
-        Veteran.GetSpeed = function (speed, wave) {
-            var bonus = wave * this.speedPerWave;
-            var total = speed * (1 - bonus);
-            return Number(total.toFixed(2));
-        };
-        Veteran.damagePerWave = .02;
-        Veteran.hpPerWave = .02;
-        Veteran.speedPerWave = .01;
-        return Veteran;
-    }());
-    squadtd.Veteran = Veteran;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
@@ -323,33 +278,61 @@ var squadtd;
         __extends(VeteranUnit, _super);
         function VeteranUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
             var _this = _super.call(this, name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
-            var vetSpeed = squadtd.Veteran.GetSpeed(_this._attackSpeed, _this._wave);
-            var vetMinAtk = squadtd.Veteran.GetDamage(_this._minAttack, _this._wave);
-            var vetMaxAtk = squadtd.Veteran.GetDamage(_this._maxAttack, _this._wave);
-            var vetLife = squadtd.Veteran.GetLife(_this._life, _this._wave);
-            _this._bonusMaxAttack = vetMaxAtk - _this._maxAttack;
-            _this._bonusMinAttack = vetMinAtk - _this._minAttack;
-            _this._bonusLife = vetLife - _this._life;
-            _this._bonusAttackSpeed = _this._attackSpeed - vetSpeed;
-            _this._maxAttack = vetMaxAtk;
-            _this._minAttack = vetMinAtk;
-            _this._attackSpeed = vetSpeed;
-            _this._life = vetLife;
+            _this.setupVeteranData(_this.wave, _this.attackSpeed, _this.minAttack, _this.maxAttack, _this.life);
             return _this;
         }
-        VeteranUnit.prototype.BonusAttackMin = function () {
-            return this._bonusMinAttack;
+        VeteranUnit.GetDamage = function (damage, wave) {
+            var bonus = wave * this.damagePerWave;
+            return damage * (1 + bonus);
         };
-        VeteranUnit.prototype.BonusAttackMax = function () {
-            return this._bonusMaxAttack;
+        VeteranUnit.GetLife = function (life, wave) {
+            var bonus = wave * this.hpPerWave;
+            var total = life * (1 + bonus);
+            if (wave <= 3)
+                return Math.floor(total);
+            return Math.ceil(total);
         };
-        VeteranUnit.prototype.BonusAttackSpeed = function () {
-            return this._bonusAttackSpeed;
+        VeteranUnit.GetSpeed = function (speed, wave) {
+            var bonus = wave * this.speedPerWave;
+            var total = speed * (1 - bonus);
+            return Number(total.toFixed(2));
         };
-        VeteranUnit.prototype.BonusLife = function () {
-            return this._bonusLife;
+        VeteranUnit.prototype.setupVeteranData = function (wave, atkSpeed, min, max, life) {
+            var vetSpeed = VeteranUnit.GetSpeed(atkSpeed, wave);
+            var vetMinAtk = VeteranUnit.GetDamage(min, wave);
+            var vetMaxAtk = VeteranUnit.GetDamage(max, wave);
+            var vetLife = VeteranUnit.GetLife(life, wave);
+            this.bonusMaxAttack = vetMaxAtk - this.maxAttack;
+            this.bonusMinAttack = vetMinAtk - this.minAttack;
+            this.bonusLife = vetLife - this.life;
+            this.bonusAttackSpeed = this.attackSpeed - vetSpeed;
+            this.maxAttack = vetMaxAtk;
+            this.minAttack = vetMinAtk;
+            this.attackSpeed = vetSpeed;
+            this.life = vetLife;
         };
+        VeteranUnit.prototype.copyFrom = function (other) {
+            _super.prototype.copyFrom.call(this, other);
+            this.setupVeteranData(other.wave, other.attackSpeed, other.minAttack, other.maxAttack, other.life);
+        };
+        VeteranUnit.damagePerWave = .02;
+        VeteranUnit.hpPerWave = .02;
+        VeteranUnit.speedPerWave = .01;
         return VeteranUnit;
     }(squadtd.WaveUnit));
     squadtd.VeteranUnit = VeteranUnit;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var Wave = (function () {
+        function Wave(number, unit, unitCount) {
+            this.number = number;
+            this.unit = unit;
+            this.unitCount = unitCount;
+            this.vUnit = new squadtd.VeteranUnit();
+            this.vUnit.copyFrom(unit);
+        }
+        return Wave;
+    }());
+    squadtd.Wave = Wave;
 })(squadtd || (squadtd = {}));

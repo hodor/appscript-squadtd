@@ -14,7 +14,7 @@ namespace squadtd {
       return reward;
     }
 
-    public static Terraton(wave:number) : WaveUnit {
+    public static Terratron(wave:number) : WaveUnit {
       let upgrade = wave - 30;
       if(upgrade <= 0) throw Utilities.formatString('Cannot create Terratron on wave %s. Minimum Wave is 31', wave);
       upgrade -= 1;
@@ -29,7 +29,7 @@ namespace squadtd {
       let atkMin = baseMinAtk + (Math.floor(atkPerUpgrade * upgrade));
       let atkMax = atkMin + baseAtkDiff;
 
-      return new WaveUnit("Terraton", wave, 0, life, UnitType.biological, DamageType.chaos, atkMin, atkMax, 1, 4, 2.25);
+      return new WaveUnit("Terratron", wave, 0, life, UnitType.biological, DamageType.chaos, atkMin, atkMax, 1, 4, 2.25);
     }
   }
 }
