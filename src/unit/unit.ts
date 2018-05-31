@@ -2,7 +2,7 @@ namespace squadtd {
   //When working on GAS, we need to make sure that the base class of any child class extends from Object.
   export class Unit {
     public name:string;
-    public life:number = 0;
+    public hp:number = 0;
     public moveSpeed:number;
     public range:number;
     public minAttack:number;
@@ -14,7 +14,7 @@ namespace squadtd {
     constructor(name?:string, life?:number, armorType?:UnitType, attackType?:DamageType, 
         minAttack?:number, maxAttack?:number, attackSpeed?:number, moveSpeed?:number, range?:number) {
       this.name = name || '';
-      this.life = life || 0;
+      this.hp = life || 0;
       this.armorType = armorType || UnitType.biological;
       this.attackType = attackType || DamageType.chaos;
       this.minAttack = minAttack || 0;
@@ -30,7 +30,7 @@ namespace squadtd {
 
     public copyFrom(other:Unit){
       this.name = other.name;
-      this.life = other.life;
+      this.hp = other.hp;
       this.armorType = other.armorType;
       this.attackType = other.attackType;
       this.minAttack = other.minAttack;

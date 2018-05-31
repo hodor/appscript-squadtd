@@ -14,5 +14,15 @@ namespace squadtd {
       this.vUnit.copyFrom(unit);
       this.reward = WaveFacade.GetWaveReward(number);
     }
+
+    public getMaximumReward(): number {
+      return this.reward + (this.unit.reward * this.unitCount);
+    }
+
+    public getTotalHP(isVet:boolean): number {
+      let unitHP = this.unit.hp;
+      if(isVet) unitHP = this.vUnit.hp;
+      return unitHP * this.unitCount;
+    }
   }
 }

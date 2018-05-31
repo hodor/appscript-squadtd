@@ -9,7 +9,7 @@ namespace squadtd {
       return damage * (1 + bonus);
     }
 
-    public static GetLife(life:number, wave:number) : number {
+    public static GetHP(life:number, wave:number) : number {
       let bonus = wave * this.hpPerWave;
       var total = life * (1 + bonus);
       if(wave <= 3) return Math.floor(total);
@@ -31,27 +31,27 @@ namespace squadtd {
       attackType?:DamageType, minAttack?:number, maxAttack?:number, 
       attackSpeed?:number, moveSpeed?:number, range?:number) {
         super(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range);
-        this.setupVeteranData(this.wave, this.attackSpeed, this.minAttack, this.maxAttack, this.life);
+        this.setupVeteranData(this.wave, this.attackSpeed, this.minAttack, this.maxAttack, this.hp);
       }
 
     private setupVeteranData(wave:number, atkSpeed:number, min:number, max:number, life:number) {
       let vetSpeed = VeteranUnit.GetSpeed(atkSpeed, wave);
       let vetMinAtk = VeteranUnit.GetDamage(min, wave);
       let vetMaxAtk = VeteranUnit.GetDamage(max, wave);
-      let vetLife = VeteranUnit.GetLife(life, wave);
+      let vetHP = VeteranUnit.GetHP(life, wave);
       this.bonusMaxAttack = vetMaxAtk - this.maxAttack;
       this.bonusMinAttack = vetMinAtk - this.minAttack;
-      this.bonusLife = vetLife - this.life;
+      this.bonusLife = vetHP - this.hp;
       this.bonusAttackSpeed = this.attackSpeed - vetSpeed;
       this.maxAttack = vetMaxAtk;
       this.minAttack = vetMinAtk;
       this.attackSpeed = vetSpeed;
-      this.life = vetLife;
+      this.hp = vetHP;
     }
     
     public copyFrom(other:WaveUnit){
       super.copyFrom(other);
-      this.setupVeteranData(other.wave, other.attackSpeed, other.minAttack, other.maxAttack, other.life);
+      this.setupVeteranData(other.wave, other.attackSpeed, other.minAttack, other.maxAttack, other.hp);
     }
 
   }

@@ -8,7 +8,7 @@ namespace squadtd {
     unitCount = 'Units',
     unitType = 'Defense Type',
     unitAttack = 'Attack Type',
-    unitLife = 'Life',
+    unitHP = 'Life',
     unitMove = 'Move Speed',
     unitRange = 'Range',
     unitAtkMin = 'Attack Min',
@@ -44,7 +44,7 @@ namespace squadtd {
       unit.armorType = curRow[this.getCol(WColNames.unitType)] as UnitType;
       unit.attackSpeed = curRow[this.getCol(WColNames.unitAtkSpeed)] as number;
       unit.attackType = curRow[this.getCol(WColNames.unitAttack)] as DamageType;
-      unit.life = curRow[this.getCol(WColNames.unitLife)] as number;
+      unit.hp = curRow[this.getCol(WColNames.unitHP)] as number;
       unit.maxAttack = curRow[this.getCol(WColNames.unitAtkMax)] as number;
       unit.minAttack = curRow[this.getCol(WColNames.unitAtkMin)] as number;
       unit.moveSpeed = curRow[this.getCol(WColNames.unitMove)] as number;

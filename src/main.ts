@@ -37,7 +37,7 @@ function vetDamage(ammount:number, wave:number) {
 
 function vetLife(ammount:number, wave:number) {
   squadtd.Validator.Validate([[ammount, 'number'], [wave,'number']]);
-  return squadtd.VeteranUnit.GetLife(ammount, wave);
+  return squadtd.VeteranUnit.GetHP(ammount, wave);
 }
 
 function vetSpeed(ammount:number, wave:number) {
@@ -56,7 +56,7 @@ function terratron(wave:number){
   let terratron:squadtd.WaveUnit = squadtd.WaveFacade.Terratron(wave)
   let answer:Array<any> = new Array();
   answer.push(new Array());
-  answer[0].push(terratron.life);
+  answer[0].push(terratron.hp);
   answer[0].push(terratron.moveSpeed);
   answer[0].push(terratron.range);
   answer[0].push(terratron.minAttack);
