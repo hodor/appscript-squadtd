@@ -9,9 +9,9 @@ namespace squadtd {
       return damage * (1 + bonus);
     }
 
-    public static GetHP(life:number, wave:number) : number {
+    public static GetHP(hp:number, wave:number) : number {
       let bonus = wave * this.hpPerWave;
-      var total = life * (1 + bonus);
+      var total = hp * (1 + bonus);
       if(wave <= 3) return Math.floor(total);
       return Math.ceil(total);
     }

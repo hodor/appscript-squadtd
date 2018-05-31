@@ -11,10 +11,10 @@ namespace squadtd {
     public armorType:UnitType;
     public attackType:DamageType;
   
-    constructor(name?:string, life?:number, armorType?:UnitType, attackType?:DamageType, 
+    constructor(name?:string, hp?:number, armorType?:UnitType, attackType?:DamageType, 
         minAttack?:number, maxAttack?:number, attackSpeed?:number, moveSpeed?:number, range?:number) {
       this.name = name || '';
-      this.hp = life || 0;
+      this.hp = hp || 0;
       this.armorType = armorType || UnitType.biological;
       this.attackType = attackType || DamageType.chaos;
       this.minAttack = minAttack || 0;

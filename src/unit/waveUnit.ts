@@ -4,10 +4,10 @@ namespace squadtd {
     public wave:number;
     public reward:number;
 
-    constructor(name?:string, wave?:number, reward?:number, life?:number, armorType?:UnitType, 
+    constructor(name?:string, wave?:number, reward?:number, hp?:number, armorType?:UnitType, 
       attackType?:DamageType, minAttack?:number, maxAttack?:number, 
       attackSpeed?:number, moveSpeed?:number, range?:number) {
-      super(name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range);
+      super(name, hp, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range);
       this.wave = wave || 0;
       this.reward = reward || 0;
     }
