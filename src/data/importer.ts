@@ -1,4 +1,12 @@
 namespace squadtd {
+  export class HeaderData {
+    public name:string;
+    public type:string;
+    constructor(name:string, type:string){
+      this.name = name;
+      this.type = type;
+    }
+  }
   export abstract class Importer {
     protected maxRowDepth = 200;
     protected maxColDepth = this.maxRowDepth;
@@ -8,11 +16,11 @@ namespace squadtd {
     protected headerRow:number = -1;
     protected headerColDict = {};
     protected lastRow:number = 1;
-
     /**
      * Creates an instance of Importer.
      * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet 
      * @param {*} stringValues An Enum with string values
+     * @param {*} typeDictionary An object that says the type for each of the enum values
      * @memberof Importer
      */
     constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet, stringValues: any, startCol?:number, startRow?:number, numCols?:number, numRows?:number) {
@@ -64,6 +72,43 @@ namespace squadtd {
     public getCol(name:string){
       return this.headerColDict[name];
     }
+
+    private currentRowNum = -1;
+    private currentRowData:Object[] = null;
+    public setCurrentRow(row:number) { 
+      this.currentRowNum = row; 
+      this.currentRowData = this.ValueData[row];
+    }
+    public getStringAt(colName:string, rowNum?:number) : string {
+      if(rowNum !== undefined)
+        this.setCurrentRow(rowNum);
+      
+      if(!this.currentRowData)
+        throw Utilities.formatString('Could not load column[%s] in row[%s]', colName, rowNum);
+
+      return this.currentRowData[this.getCol(colName)] as string;
+    }
+
+    public getNumberAt(colName:string, rowNum?:number) : number {
+      if(rowNum !== undefined)
+        this.setCurrentRow(rowNum);
+      
+      if(!this.currentRowData)
+        throw Utilities.formatString('Could not load column[%s] in row[%s]', colName, rowNum);
+
+      return this.currentRowData[this.getCol(colName)] as number;
+    }
+
+    public getDataAt(colName:string, rowNum?:number) : any {
+      if(rowNum !== undefined)
+        this.setCurrentRow(rowNum);
+      
+      if(!this.currentRowData)
+        throw Utilities.formatString('Could not load column[%s] in row[%s]', colName, rowNum);
+
+      return this.currentRowData[this.getCol(colName)] as any;
+    }
+
     public abstract loadAllData(): any;
     public abstract loadDataAtRow(row:number): any; 
   }

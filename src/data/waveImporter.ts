@@ -34,25 +34,24 @@ namespace squadtd {
         return null;
       }
       
-      let curRow:Object[] = this.ValueData[row];
-
-      let name:string = curRow[this.getCol(WColNames.name)] as string;
-      let number:number = curRow[this.getCol(WColNames.number)] as number;
-      let count:number = curRow[this.getCol(WColNames.unitCount)] as number;
+      this.setCurrentRow(row);
+      let name:string   = this.getStringAt(WColNames.name);
+      let number:number = this.getNumberAt(WColNames.number);
+      let count:number  = this.getNumberAt(WColNames.unitCount);
 
       let unit:WaveUnit = new WaveUnit(name);
-      unit.armorType = curRow[this.getCol(WColNames.unitType)] as UnitType;
-      unit.attackSpeed = curRow[this.getCol(WColNames.unitAtkSpeed)] as number;
-      unit.attackType = curRow[this.getCol(WColNames.unitAttack)] as DamageType;
-      unit.hp = curRow[this.getCol(WColNames.unitHP)] as number;
-      unit.maxAttack = curRow[this.getCol(WColNames.unitAtkMax)] as number;
-      unit.minAttack = curRow[this.getCol(WColNames.unitAtkMin)] as number;
-      unit.moveSpeed = curRow[this.getCol(WColNames.unitMove)] as number;
-      unit.range = curRow[this.getCol(WColNames.unitRange)] as number;
-      unit.reward = curRow[this.getCol(WColNames.unitReward)] as number;
-      unit.wave = number;
+      unit.armorType    = this.getDataAt(WColNames.unitType) as UnitType;
+      unit.attackSpeed  = this.getNumberAt(WColNames.unitAtkSpeed);
+      unit.attackType   = this.getDataAt(WColNames.unitAttack) as DamageType;
+      unit.hp           = this.getNumberAt(WColNames.unitHP);
+      unit.maxAttack    = this.getNumberAt(WColNames.unitAtkMax);
+      unit.minAttack    = this.getNumberAt(WColNames.unitAtkMin);
+      unit.moveSpeed    = this.getNumberAt(WColNames.unitMove);
+      unit.range        = this.getNumberAt(WColNames.unitRange);
+      unit.reward       = this.getNumberAt(WColNames.unitReward);
+      unit.wave         = number;
 
-      let wave:Wave = new Wave(number, unit, count)
+      let wave:Wave     = new Wave(number, unit, count)
       return wave;
     }
   }
