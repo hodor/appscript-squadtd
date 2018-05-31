@@ -187,6 +187,14 @@ var squadtd;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
+    var HeaderData = (function () {
+        function HeaderData(name, type) {
+            this.name = name;
+            this.type = type;
+        }
+        return HeaderData;
+    }());
+    squadtd.HeaderData = HeaderData;
     var Importer = (function () {
         function Importer(sheet, stringValues, startCol, startRow, numCols, numRows) {
             this.maxRowDepth = 200;
@@ -194,6 +202,8 @@ var squadtd;
             this.headerRow = -1;
             this.headerColDict = {};
             this.lastRow = 1;
+            this.currentRowNum = -1;
+            this.currentRowData = null;
             var cStart = startCol || 1;
             var rStart = startRow || 1;
             var colCount = numCols || this.maxColDepth;
@@ -230,6 +240,31 @@ var squadtd;
         }
         Importer.prototype.getCol = function (name) {
             return this.headerColDict[name];
+        };
+        Importer.prototype.setCurrentRow = function (row) {
+            this.currentRowNum = row;
+            this.currentRowData = this.ValueData[row];
+        };
+        Importer.prototype.getStringAt = function (colName, rowNum) {
+            if (rowNum !== undefined)
+                this.setCurrentRow(rowNum);
+            if (!this.currentRowData)
+                throw Utilities.formatString('Could not load column[%s] in row[%s]', colName, rowNum);
+            return this.currentRowData[this.getCol(colName)];
+        };
+        Importer.prototype.getNumberAt = function (colName, rowNum) {
+            if (rowNum !== undefined)
+                this.setCurrentRow(rowNum);
+            if (!this.currentRowData)
+                throw Utilities.formatString('Could not load column[%s] in row[%s]', colName, rowNum);
+            return this.currentRowData[this.getCol(colName)];
+        };
+        Importer.prototype.getDataAt = function (colName, rowNum) {
+            if (rowNum !== undefined)
+                this.setCurrentRow(rowNum);
+            if (!this.currentRowData)
+                throw Utilities.formatString('Could not load column[%s] in row[%s]', colName, rowNum);
+            return this.currentRowData[this.getCol(colName)];
         };
         return Importer;
     }());
@@ -269,20 +304,20 @@ var squadtd;
             if (row <= this.headerRow) {
                 return null;
             }
-            var curRow = this.ValueData[row];
-            var name = curRow[this.getCol(WColNames.name)];
-            var number = curRow[this.getCol(WColNames.number)];
-            var count = curRow[this.getCol(WColNames.unitCount)];
+            this.setCurrentRow(row);
+            var name = this.getStringAt(WColNames.name);
+            var number = this.getNumberAt(WColNames.number);
+            var count = this.getNumberAt(WColNames.unitCount);
             var unit = new squadtd.WaveUnit(name);
-            unit.armorType = curRow[this.getCol(WColNames.unitType)];
-            unit.attackSpeed = curRow[this.getCol(WColNames.unitAtkSpeed)];
-            unit.attackType = curRow[this.getCol(WColNames.unitAttack)];
-            unit.hp = curRow[this.getCol(WColNames.unitHP)];
-            unit.maxAttack = curRow[this.getCol(WColNames.unitAtkMax)];
-            unit.minAttack = curRow[this.getCol(WColNames.unitAtkMin)];
-            unit.moveSpeed = curRow[this.getCol(WColNames.unitMove)];
-            unit.range = curRow[this.getCol(WColNames.unitRange)];
-            unit.reward = curRow[this.getCol(WColNames.unitReward)];
+            unit.armorType = this.getDataAt(WColNames.unitType);
+            unit.attackSpeed = this.getNumberAt(WColNames.unitAtkSpeed);
+            unit.attackType = this.getDataAt(WColNames.unitAttack);
+            unit.hp = this.getNumberAt(WColNames.unitHP);
+            unit.maxAttack = this.getNumberAt(WColNames.unitAtkMax);
+            unit.minAttack = this.getNumberAt(WColNames.unitAtkMin);
+            unit.moveSpeed = this.getNumberAt(WColNames.unitMove);
+            unit.range = this.getNumberAt(WColNames.unitRange);
+            unit.reward = this.getNumberAt(WColNames.unitReward);
             unit.wave = number;
             var wave = new squadtd.Wave(number, unit, count);
             return wave;
@@ -313,6 +348,7 @@ var squadtd;
 })(squadtd || (squadtd = {}));
 function onOpen() {
     squadtd.WaveData.Init();
+    squadtd.UnitData.Init();
 }
 function onEdit(e) {
 }
@@ -394,74 +430,74 @@ var squadtd;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
-    var PlayerUnit = (function (_super) {
-        __extends(PlayerUnit, _super);
-        function PlayerUnit(name, cost, baseUnit, hp, energy, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) {
-            var _this = _super.call(this, name, hp, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) || this;
-            _this.baseUnit = baseUnit || null;
-            _this.cost = cost || 0;
-            _this.energy = energy || 0;
+    var UColNames;
+    (function (UColNames) {
+        UColNames["name"] = "Name";
+        UColNames["baseUnit"] = "Base Unit";
+        UColNames["cost"] = "Cost / Upgrade";
+        UColNames["supply"] = "Supply";
+        UColNames["type"] = "Defense Type";
+        UColNames["attack"] = "Attack Type";
+        UColNames["hp"] = "Life";
+        UColNames["mp"] = "Energy";
+        UColNames["moveSpeed"] = "Move Speed";
+        UColNames["range"] = "Range";
+        UColNames["atkMin"] = "Attack Min";
+        UColNames["atkMax"] = "Attack Max";
+        UColNames["speed"] = "Speed";
+    })(UColNames = squadtd.UColNames || (squadtd.UColNames = {}));
+    var UnitImporter = (function (_super) {
+        __extends(UnitImporter, _super);
+        function UnitImporter(sheet) {
+            var _this = _super.call(this, sheet, UColNames) || this;
+            _this.loadedUnits = new Array();
             return _this;
         }
-        PlayerUnit.prototype.getCost = function () {
-            var totalCost = this.cost;
-            if (this.baseUnit)
-                totalCost += this.baseUnit.getCost();
-            return totalCost;
+        UnitImporter.prototype.loadAllData = function () {
+            var units = new Array();
+            for (var row = this.headerRow + 1; row < this.lastRow; row++) {
+                units.push(this.loadDataAtRow(row));
+            }
+            return units;
         };
-        return PlayerUnit;
-    }(squadtd.Unit));
-    squadtd.PlayerUnit = PlayerUnit;
-})(squadtd || (squadtd = {}));
-var squadtd;
-(function (squadtd) {
-    var VeteranUnit = (function (_super) {
-        __extends(VeteranUnit, _super);
-        function VeteranUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
-            var _this = _super.call(this, name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
-            _this.setupVeteranData(_this.wave, _this.attackSpeed, _this.minAttack, _this.maxAttack, _this.hp);
-            return _this;
-        }
-        VeteranUnit.GetDamage = function (damage, wave) {
-            var bonus = wave * this.damagePerWave;
-            return damage * (1 + bonus);
+        UnitImporter.prototype.loadDataAtRow = function (row) {
+            if (row <= this.headerRow) {
+                return null;
+            }
+            this.setCurrentRow(row);
+            var name = this.getStringAt(UColNames.name);
+            var baseUnitName = this.getStringAt(UColNames.baseUnit);
+            var baseUnit = null;
+            if (baseUnitName) {
+                for (var i in this.loadedUnits) {
+                    var cUnit = this.loadedUnits[i];
+                    if (cUnit.name.toUpperCase() === baseUnitName.toUpperCase()) {
+                        baseUnit = cUnit;
+                        break;
+                    }
+                }
+            }
+            if (baseUnitName && !baseUnit)
+                throw Utilities.formatString('Unit %s on row %d has the undefined base unit %s. Try moving the %s above the unit %s', name, row, baseUnitName, baseUnitName, name);
+            var cost = this.getNumberAt(UColNames.cost);
+            var supply = this.getNumberAt(UColNames.supply);
+            var type = this.getDataAt(UColNames.type);
+            var attack = this.getDataAt(UColNames.attack);
+            var hp = this.getNumberAt(UColNames.hp);
+            var mp = this.getNumberAt(UColNames.mp);
+            var moveSpeed = this.getNumberAt(UColNames.moveSpeed);
+            var range = this.getNumberAt(UColNames.range);
+            var atkMin = this.getNumberAt(UColNames.atkMin);
+            var atkMax = this.getNumberAt(UColNames.atkMax);
+            var speed = this.getNumberAt(UColNames.speed);
+            var rowUnit = new squadtd.PlayerUnit(name, cost, baseUnit, hp, mp, type, attack, atkMin, atkMax, speed, moveSpeed, range);
+            Logger.log(Utilities.formatString('Creating unit[%s], which has a base type %s. Armor[%s], Weapon[%s], DPS[%f]', rowUnit.name, baseUnitName, rowUnit.armorType, rowUnit.attackType, rowUnit.DPS()));
+            this.loadedUnits.push(rowUnit);
+            return rowUnit;
         };
-        VeteranUnit.GetHP = function (hp, wave) {
-            var bonus = wave * this.hpPerWave;
-            var total = hp * (1 + bonus);
-            if (wave <= 3)
-                return Math.floor(total);
-            return Math.ceil(total);
-        };
-        VeteranUnit.GetSpeed = function (speed, wave) {
-            var bonus = wave * this.speedPerWave;
-            var total = speed * (1 - bonus);
-            return Number(total.toFixed(2));
-        };
-        VeteranUnit.prototype.setupVeteranData = function (wave, atkSpeed, min, max, life) {
-            var vetSpeed = VeteranUnit.GetSpeed(atkSpeed, wave);
-            var vetMinAtk = VeteranUnit.GetDamage(min, wave);
-            var vetMaxAtk = VeteranUnit.GetDamage(max, wave);
-            var vetHP = VeteranUnit.GetHP(life, wave);
-            this.bonusMaxAttack = vetMaxAtk - this.maxAttack;
-            this.bonusMinAttack = vetMinAtk - this.minAttack;
-            this.bonusLife = vetHP - this.hp;
-            this.bonusAttackSpeed = this.attackSpeed - vetSpeed;
-            this.maxAttack = vetMaxAtk;
-            this.minAttack = vetMinAtk;
-            this.attackSpeed = vetSpeed;
-            this.hp = vetHP;
-        };
-        VeteranUnit.prototype.copyFrom = function (other) {
-            _super.prototype.copyFrom.call(this, other);
-            this.setupVeteranData(other.wave, other.attackSpeed, other.minAttack, other.maxAttack, other.hp);
-        };
-        VeteranUnit.damagePerWave = .02;
-        VeteranUnit.hpPerWave = .02;
-        VeteranUnit.speedPerWave = .01;
-        return VeteranUnit;
-    }(squadtd.WaveUnit));
-    squadtd.VeteranUnit = VeteranUnit;
+        return UnitImporter;
+    }(squadtd.Importer));
+    squadtd.UnitImporter = UnitImporter;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
@@ -537,6 +573,97 @@ var squadtd;
         UnitType["mechanical"] = "MECHANICAL";
         UnitType["biological"] = "BIOLOGICAL";
     })(UnitType = squadtd.UnitType || (squadtd.UnitType = {}));
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var PlayerUnit = (function (_super) {
+        __extends(PlayerUnit, _super);
+        function PlayerUnit(name, cost, baseUnit, hp, energy, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) {
+            var _this = _super.call(this, name, hp, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) || this;
+            _this.baseUnit = baseUnit || null;
+            _this.cost = cost || 0;
+            _this.energy = energy || 0;
+            return _this;
+        }
+        PlayerUnit.prototype.getCost = function () {
+            var totalCost = this.cost;
+            if (this.baseUnit)
+                totalCost += this.baseUnit.getCost();
+            return totalCost;
+        };
+        return PlayerUnit;
+    }(squadtd.Unit));
+    squadtd.PlayerUnit = PlayerUnit;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var UnitData;
+    (function (UnitData) {
+        var units;
+        var importer;
+        function Init() {
+            if (!SpreadsheetApp)
+                throw 'SpreadsheetApp variable not existant';
+            var importSheet = SpreadsheetApp.getActive().getSheetByName('Units');
+            if (!importSheet) {
+                Logger.log(Utilities.formatString('Cannot find spreadsheet named Waves to import'));
+                return;
+            }
+            importer = new squadtd.UnitImporter(importSheet);
+            units = importer.loadAllData();
+        }
+        UnitData.Init = Init;
+    })(UnitData = squadtd.UnitData || (squadtd.UnitData = {}));
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var VeteranUnit = (function (_super) {
+        __extends(VeteranUnit, _super);
+        function VeteranUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
+            var _this = _super.call(this, name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
+            _this.setupVeteranData(_this.wave, _this.attackSpeed, _this.minAttack, _this.maxAttack, _this.hp);
+            return _this;
+        }
+        VeteranUnit.GetDamage = function (damage, wave) {
+            var bonus = wave * this.damagePerWave;
+            return damage * (1 + bonus);
+        };
+        VeteranUnit.GetHP = function (hp, wave) {
+            var bonus = wave * this.hpPerWave;
+            var total = hp * (1 + bonus);
+            if (wave <= 3)
+                return Math.floor(total);
+            return Math.ceil(total);
+        };
+        VeteranUnit.GetSpeed = function (speed, wave) {
+            var bonus = wave * this.speedPerWave;
+            var total = speed * (1 - bonus);
+            return Number(total.toFixed(2));
+        };
+        VeteranUnit.prototype.setupVeteranData = function (wave, atkSpeed, min, max, life) {
+            var vetSpeed = VeteranUnit.GetSpeed(atkSpeed, wave);
+            var vetMinAtk = VeteranUnit.GetDamage(min, wave);
+            var vetMaxAtk = VeteranUnit.GetDamage(max, wave);
+            var vetHP = VeteranUnit.GetHP(life, wave);
+            this.bonusMaxAttack = vetMaxAtk - this.maxAttack;
+            this.bonusMinAttack = vetMinAtk - this.minAttack;
+            this.bonusLife = vetHP - this.hp;
+            this.bonusAttackSpeed = this.attackSpeed - vetSpeed;
+            this.maxAttack = vetMaxAtk;
+            this.minAttack = vetMinAtk;
+            this.attackSpeed = vetSpeed;
+            this.hp = vetHP;
+        };
+        VeteranUnit.prototype.copyFrom = function (other) {
+            _super.prototype.copyFrom.call(this, other);
+            this.setupVeteranData(other.wave, other.attackSpeed, other.minAttack, other.maxAttack, other.hp);
+        };
+        VeteranUnit.damagePerWave = .02;
+        VeteranUnit.hpPerWave = .02;
+        VeteranUnit.speedPerWave = .01;
+        return VeteranUnit;
+    }(squadtd.WaveUnit));
+    squadtd.VeteranUnit = VeteranUnit;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
