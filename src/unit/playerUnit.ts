@@ -2,7 +2,7 @@ namespace squadtd {
   export class PlayerUnit extends Unit {
     public cost: number;
     public baseUnit: PlayerUnit;
-    private energy: number;
+    public energy: number;
 
     constructor(name?: string, cost?: number, baseUnit?: PlayerUnit, hp?: number, energy?: number, armorType?: UnitType,
       attackType?: DamageType, minAtk?: number, maxAtk?: number,

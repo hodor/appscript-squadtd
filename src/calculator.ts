@@ -29,7 +29,7 @@ namespace squadtd {
       damage = damage.toUpperCase();
       unit = unit.toUpperCase();
 
-      if (damage == DamageType.chaos && unit == UnitType.biological)
+      if (damage == DamageType.chaos || unit == UnitType.biological)
         return 1;
 
       switch (damage) {

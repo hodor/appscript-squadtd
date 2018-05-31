@@ -37,7 +37,7 @@ var squadtd;
                 throw Utilities.formatString('Invalid unit type %s', unit);
             damage = damage.toUpperCase();
             unit = unit.toUpperCase();
-            if (damage == squadtd.DamageType.chaos && unit == squadtd.UnitType.biological)
+            if (damage == squadtd.DamageType.chaos || unit == squadtd.UnitType.biological)
                 return 1;
             switch (damage) {
                 case squadtd.DamageType.normal:
@@ -100,10 +100,10 @@ var squadtd;
 var squadtd;
 (function (squadtd) {
     var Unit = (function () {
-        function Unit(name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
-            this.life = 0;
+        function Unit(name, hp, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
+            this.hp = 0;
             this.name = name || '';
-            this.life = life || 0;
+            this.hp = hp || 0;
             this.armorType = armorType || squadtd.UnitType.biological;
             this.attackType = attackType || squadtd.DamageType.chaos;
             this.minAttack = minAttack || 0;
@@ -117,7 +117,7 @@ var squadtd;
         };
         Unit.prototype.copyFrom = function (other) {
             this.name = other.name;
-            this.life = other.life;
+            this.hp = other.hp;
             this.armorType = other.armorType;
             this.attackType = other.attackType;
             this.minAttack = other.minAttack;
@@ -134,8 +134,8 @@ var squadtd;
 (function (squadtd) {
     var WaveUnit = (function (_super) {
         __extends(WaveUnit, _super);
-        function WaveUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
-            var _this = _super.call(this, name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
+        function WaveUnit(name, wave, reward, hp, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
+            var _this = _super.call(this, name, hp, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
             _this.wave = wave || 0;
             _this.reward = reward || 0;
             return _this;
@@ -246,7 +246,7 @@ var squadtd;
         WColNames["unitCount"] = "Units";
         WColNames["unitType"] = "Defense Type";
         WColNames["unitAttack"] = "Attack Type";
-        WColNames["unitLife"] = "Life";
+        WColNames["unitHP"] = "Life";
         WColNames["unitMove"] = "Move Speed";
         WColNames["unitRange"] = "Range";
         WColNames["unitAtkMin"] = "Attack Min";
@@ -277,7 +277,7 @@ var squadtd;
             unit.armorType = curRow[this.getCol(WColNames.unitType)];
             unit.attackSpeed = curRow[this.getCol(WColNames.unitAtkSpeed)];
             unit.attackType = curRow[this.getCol(WColNames.unitAttack)];
-            unit.life = curRow[this.getCol(WColNames.unitLife)];
+            unit.hp = curRow[this.getCol(WColNames.unitHP)];
             unit.maxAttack = curRow[this.getCol(WColNames.unitAtkMax)];
             unit.minAttack = curRow[this.getCol(WColNames.unitAtkMin)];
             unit.moveSpeed = curRow[this.getCol(WColNames.unitMove)];
@@ -311,6 +311,7 @@ var squadtd;
 })(squadtd || (squadtd = {}));
 function onOpen() {
     squadtd.WaveData.Init();
+    squadtd.Effectiveness.Init();
 }
 function onEdit(e) {
 }
@@ -332,7 +333,7 @@ function vetDamage(ammount, wave) {
 }
 function vetLife(ammount, wave) {
     squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
-    return squadtd.VeteranUnit.GetLife(ammount, wave);
+    return squadtd.VeteranUnit.GetHP(ammount, wave);
 }
 function vetSpeed(ammount, wave) {
     squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
@@ -347,7 +348,7 @@ function terratron(wave) {
     var terratron = squadtd.WaveFacade.Terratron(wave);
     var answer = new Array();
     answer.push(new Array());
-    answer[0].push(terratron.life);
+    answer[0].push(terratron.hp);
     answer[0].push(terratron.moveSpeed);
     answer[0].push(terratron.range);
     answer[0].push(terratron.minAttack);
@@ -381,6 +382,77 @@ var squadtd;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
+    var PlayerUnit = (function (_super) {
+        __extends(PlayerUnit, _super);
+        function PlayerUnit(name, cost, baseUnit, hp, energy, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) {
+            var _this = _super.call(this, name, hp, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) || this;
+            _this.baseUnit = baseUnit || null;
+            _this.cost = cost || 0;
+            _this.energy = energy || 0;
+            return _this;
+        }
+        PlayerUnit.prototype.getCost = function () {
+            var totalCost = this.cost;
+            if (this.baseUnit)
+                totalCost += this.baseUnit.getCost();
+            return totalCost;
+        };
+        return PlayerUnit;
+    }(squadtd.Unit));
+    squadtd.PlayerUnit = PlayerUnit;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var VeteranUnit = (function (_super) {
+        __extends(VeteranUnit, _super);
+        function VeteranUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
+            var _this = _super.call(this, name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
+            _this.setupVeteranData(_this.wave, _this.attackSpeed, _this.minAttack, _this.maxAttack, _this.hp);
+            return _this;
+        }
+        VeteranUnit.GetDamage = function (damage, wave) {
+            var bonus = wave * this.damagePerWave;
+            return damage * (1 + bonus);
+        };
+        VeteranUnit.GetHP = function (hp, wave) {
+            var bonus = wave * this.hpPerWave;
+            var total = hp * (1 + bonus);
+            if (wave <= 3)
+                return Math.floor(total);
+            return Math.ceil(total);
+        };
+        VeteranUnit.GetSpeed = function (speed, wave) {
+            var bonus = wave * this.speedPerWave;
+            var total = speed * (1 - bonus);
+            return Number(total.toFixed(2));
+        };
+        VeteranUnit.prototype.setupVeteranData = function (wave, atkSpeed, min, max, life) {
+            var vetSpeed = VeteranUnit.GetSpeed(atkSpeed, wave);
+            var vetMinAtk = VeteranUnit.GetDamage(min, wave);
+            var vetMaxAtk = VeteranUnit.GetDamage(max, wave);
+            var vetHP = VeteranUnit.GetHP(life, wave);
+            this.bonusMaxAttack = vetMaxAtk - this.maxAttack;
+            this.bonusMinAttack = vetMinAtk - this.minAttack;
+            this.bonusLife = vetHP - this.hp;
+            this.bonusAttackSpeed = this.attackSpeed - vetSpeed;
+            this.maxAttack = vetMaxAtk;
+            this.minAttack = vetMinAtk;
+            this.attackSpeed = vetSpeed;
+            this.hp = vetHP;
+        };
+        VeteranUnit.prototype.copyFrom = function (other) {
+            _super.prototype.copyFrom.call(this, other);
+            this.setupVeteranData(other.wave, other.attackSpeed, other.minAttack, other.maxAttack, other.hp);
+        };
+        VeteranUnit.damagePerWave = .02;
+        VeteranUnit.hpPerWave = .02;
+        VeteranUnit.speedPerWave = .01;
+        return VeteranUnit;
+    }(squadtd.WaveUnit));
+    squadtd.VeteranUnit = VeteranUnit;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
     var DamageType;
     (function (DamageType) {
         DamageType["normal"] = "NORMAL";
@@ -389,6 +461,48 @@ var squadtd;
         DamageType["siege"] = "SIEGE";
         DamageType["chaos"] = "CHAOS";
     })(DamageType = squadtd.DamageType || (squadtd.DamageType = {}));
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var Effectiveness;
+    (function (Effectiveness) {
+        var effectiveDict = {};
+        function Init() {
+            for (var uKey in squadtd.UnitType) {
+                var armor = squadtd.UnitType[uKey];
+                effectiveDict[armor] = {
+                    damage: 0,
+                    type: new Array()
+                };
+                var bestWeapon = 'null';
+                var bestDamage = 0;
+                for (var dKey in squadtd.DamageType) {
+                    var weapon = squadtd.DamageType[dKey];
+                    var damage = squadtd.Calculator.baseDamage(weapon, armor);
+                    if (damage > bestDamage) {
+                        bestWeapon = weapon;
+                        bestDamage = damage;
+                    }
+                }
+                effectiveDict[armor].damage = bestDamage;
+                effectiveDict[armor].type.push(bestWeapon);
+                weaponLoop: for (var dKey in squadtd.DamageType) {
+                    var weapon = squadtd.DamageType[dKey];
+                    for (var i in effectiveDict[armor].type) {
+                        if (effectiveDict[armor].type[i] == weapon) {
+                            continue weaponLoop;
+                        }
+                    }
+                    var damage = squadtd.Calculator.baseDamage(weapon, armor);
+                    if (damage == effectiveDict[armor].damage) {
+                        effectiveDict[armor].type.push(weapon);
+                    }
+                }
+                Logger.log('weapon(s): ' + effectiveDict[armor].type + ' is the best against ' + armor);
+            }
+        }
+        Effectiveness.Init = Init;
+    })(Effectiveness = squadtd.Effectiveness || (squadtd.Effectiveness = {}));
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
@@ -403,56 +517,6 @@ var squadtd;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
-    var VeteranUnit = (function (_super) {
-        __extends(VeteranUnit, _super);
-        function VeteranUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
-            var _this = _super.call(this, name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
-            _this.setupVeteranData(_this.wave, _this.attackSpeed, _this.minAttack, _this.maxAttack, _this.life);
-            return _this;
-        }
-        VeteranUnit.GetDamage = function (damage, wave) {
-            var bonus = wave * this.damagePerWave;
-            return damage * (1 + bonus);
-        };
-        VeteranUnit.GetLife = function (life, wave) {
-            var bonus = wave * this.hpPerWave;
-            var total = life * (1 + bonus);
-            if (wave <= 3)
-                return Math.floor(total);
-            return Math.ceil(total);
-        };
-        VeteranUnit.GetSpeed = function (speed, wave) {
-            var bonus = wave * this.speedPerWave;
-            var total = speed * (1 - bonus);
-            return Number(total.toFixed(2));
-        };
-        VeteranUnit.prototype.setupVeteranData = function (wave, atkSpeed, min, max, life) {
-            var vetSpeed = VeteranUnit.GetSpeed(atkSpeed, wave);
-            var vetMinAtk = VeteranUnit.GetDamage(min, wave);
-            var vetMaxAtk = VeteranUnit.GetDamage(max, wave);
-            var vetLife = VeteranUnit.GetLife(life, wave);
-            this.bonusMaxAttack = vetMaxAtk - this.maxAttack;
-            this.bonusMinAttack = vetMinAtk - this.minAttack;
-            this.bonusLife = vetLife - this.life;
-            this.bonusAttackSpeed = this.attackSpeed - vetSpeed;
-            this.maxAttack = vetMaxAtk;
-            this.minAttack = vetMinAtk;
-            this.attackSpeed = vetSpeed;
-            this.life = vetLife;
-        };
-        VeteranUnit.prototype.copyFrom = function (other) {
-            _super.prototype.copyFrom.call(this, other);
-            this.setupVeteranData(other.wave, other.attackSpeed, other.minAttack, other.maxAttack, other.life);
-        };
-        VeteranUnit.damagePerWave = .02;
-        VeteranUnit.hpPerWave = .02;
-        VeteranUnit.speedPerWave = .01;
-        return VeteranUnit;
-    }(squadtd.WaveUnit));
-    squadtd.VeteranUnit = VeteranUnit;
-})(squadtd || (squadtd = {}));
-var squadtd;
-(function (squadtd) {
     var Wave = (function () {
         function Wave(number, unit, unitCount) {
             this.number = number;
@@ -462,6 +526,15 @@ var squadtd;
             this.vUnit.copyFrom(unit);
             this.reward = squadtd.WaveFacade.GetWaveReward(number);
         }
+        Wave.prototype.getMaximumReward = function () {
+            return this.reward + (this.unit.reward * this.unitCount);
+        };
+        Wave.prototype.getTotalHP = function (isVet) {
+            var unitHP = this.unit.hp;
+            if (isVet)
+                unitHP = this.vUnit.hp;
+            return unitHP * this.unitCount;
+        };
         return Wave;
     }());
     squadtd.Wave = Wave;

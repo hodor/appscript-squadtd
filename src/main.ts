@@ -7,6 +7,7 @@
 //// SPREADSHEET TRIGGERS
 function onOpen(){
   squadtd.WaveData.Init();
+  squadtd.Effectiveness.Init();
 }
 
 function onEdit(e:any){
