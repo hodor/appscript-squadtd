@@ -10,11 +10,13 @@ namespace squadtd {
 
       let importSheet:GoogleAppsScript.Spreadsheet.Sheet = SpreadsheetApp.getActive().getSheetByName('Waves');
       
-      if(!importSheet)
-        throw Utilities.formatString('Cannot find spreadsheet named Waves to import');
-      
+      if(!importSheet){
+        Logger.log(Utilities.formatString('Cannot find spreadsheet named Waves to import'));
+        return;
+      }
+
       importer = new WaveImporter(importSheet);
-      importer.loadAllData();
+      waves = importer.loadAllData();
     }
   }
 }
