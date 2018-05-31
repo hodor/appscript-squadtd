@@ -1,8 +1,10 @@
 namespace squadtd {
   export namespace Effectiveness {
     let effectiveDict = {}
+    let initialized:boolean = false;
 
     export function Init(){
+      if(initialized) return;
       for(let uKey in UnitType) {
         let armor = UnitType[uKey];
         effectiveDict[armor] = {
@@ -40,9 +42,18 @@ namespace squadtd {
             effectiveDict[armor].type.push(weapon);
           }
         }
-
-        Logger.log('weapon(s): ' +effectiveDict[armor].type + ' is the best against ' + armor);
       }
+      initialized = true;
+    }
+
+    export function mostEffectiveAgainst(armor:string) : DamageType[] {
+      if(!initialized)
+        Init();
+
+      if(!Calculator.isUnitTypeValid(armor))
+        throw Utilities.formatString('Unit type %s is not valid', armor);
+      
+      return effectiveDict[UnitType[armor.toLowerCase()]].type;
     }
   }
 }

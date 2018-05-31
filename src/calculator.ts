@@ -4,7 +4,7 @@ namespace squadtd {
 
     }
 
-    private static isUnitTypeValid(unit: string): boolean {
+    public static isUnitTypeValid(unit: string): boolean {
       for (const key in UnitType) {
         const value = UnitType[key];
         if (value.toUpperCase() === unit.toUpperCase())
@@ -13,7 +13,7 @@ namespace squadtd {
       return false;
     }
 
-    private static isDamageTypeValid(damage: string): boolean {
+    public static isDamageTypeValid(damage: string): boolean {
       for (const key in DamageType) {
         const value = DamageType[key];
         if (value.toUpperCase() === damage.toUpperCase())

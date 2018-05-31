@@ -7,7 +7,6 @@
 //// SPREADSHEET TRIGGERS
 function onOpen(){
   squadtd.WaveData.Init();
-  squadtd.Effectiveness.Init();
 }
 
 function onEdit(e:any){
@@ -28,6 +27,18 @@ function getDPS(dmgMin: number, dmgMax: number, speed: number) {
 function getDPSCostBenefit(cost:number, supply:number, dps:number){
   squadtd.Validator.Validate([[cost, 'number'], [supply,'number'], [dps, 'number']]);
   return squadtd.Calculator.DPSCostBenefit(cost, supply, dps);
+}
+
+function getMostEffective(against:string) {
+  squadtd.Validator.Validate([[against, 'string']]);
+  var types = squadtd.Effectiveness.mostEffectiveAgainst(against);
+  var str = '';
+  for(let i:number = 0; i < types.length; i++) {
+    str += types[i];
+    if((i + 1) < types.length)
+      str += ', ';
+  }
+  return str;
 }
 
 //// VETERAN

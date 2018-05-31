@@ -301,17 +301,18 @@ var squadtd;
             if (!SpreadsheetApp)
                 throw 'SpreadsheetApp variable not existant';
             var importSheet = SpreadsheetApp.getActive().getSheetByName('Waves');
-            if (!importSheet)
-                throw Utilities.formatString('Cannot find spreadsheet named Waves to import');
+            if (!importSheet) {
+                Logger.log(Utilities.formatString('Cannot find spreadsheet named Waves to import'));
+                return;
+            }
             importer = new squadtd.WaveImporter(importSheet);
-            importer.loadAllData();
+            waves = importer.loadAllData();
         }
         WaveData.Init = Init;
     })(WaveData = squadtd.WaveData || (squadtd.WaveData = {}));
 })(squadtd || (squadtd = {}));
 function onOpen() {
     squadtd.WaveData.Init();
-    squadtd.Effectiveness.Init();
 }
 function onEdit(e) {
 }
@@ -326,6 +327,17 @@ function getDPS(dmgMin, dmgMax, speed) {
 function getDPSCostBenefit(cost, supply, dps) {
     squadtd.Validator.Validate([[cost, 'number'], [supply, 'number'], [dps, 'number']]);
     return squadtd.Calculator.DPSCostBenefit(cost, supply, dps);
+}
+function getMostEffective(against) {
+    squadtd.Validator.Validate([[against, 'string']]);
+    var types = squadtd.Effectiveness.mostEffectiveAgainst(against);
+    var str = '';
+    for (var i = 0; i < types.length; i++) {
+        str += types[i];
+        if ((i + 1) < types.length)
+            str += ', ';
+    }
+    return str;
 }
 function vetDamage(ammount, wave) {
     squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
@@ -467,7 +479,10 @@ var squadtd;
     var Effectiveness;
     (function (Effectiveness) {
         var effectiveDict = {};
+        var initialized = false;
         function Init() {
+            if (initialized)
+                return;
             for (var uKey in squadtd.UnitType) {
                 var armor = squadtd.UnitType[uKey];
                 effectiveDict[armor] = {
@@ -498,10 +513,18 @@ var squadtd;
                         effectiveDict[armor].type.push(weapon);
                     }
                 }
-                Logger.log('weapon(s): ' + effectiveDict[armor].type + ' is the best against ' + armor);
             }
+            initialized = true;
         }
         Effectiveness.Init = Init;
+        function mostEffectiveAgainst(armor) {
+            if (!initialized)
+                Init();
+            if (!squadtd.Calculator.isUnitTypeValid(armor))
+                throw Utilities.formatString('Unit type %s is not valid', armor);
+            return effectiveDict[squadtd.UnitType[armor.toLowerCase()]].type;
+        }
+        Effectiveness.mostEffectiveAgainst = mostEffectiveAgainst;
     })(Effectiveness = squadtd.Effectiveness || (squadtd.Effectiveness = {}));
 })(squadtd || (squadtd = {}));
 var squadtd;
