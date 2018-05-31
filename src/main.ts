@@ -1,4 +1,18 @@
 /// <reference path="wave/waveFacade.ts"/>
+/// <reference path="wave/waveData.ts"/>
+
+//// Objects that hold data
+
+
+//// SPREADSHEET TRIGGERS
+function onOpen(){
+  squadtd.WaveData.Init();
+}
+
+function onEdit(e:any){
+
+}
+
 //// DAMAGE
 function getBaseDamage(damageType: string, unitType: string) {
   squadtd.Validator.Validate([[damageType, 'string'], [unitType,'string']]);

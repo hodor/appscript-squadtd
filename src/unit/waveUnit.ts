@@ -8,8 +8,8 @@ namespace squadtd {
       attackType?:DamageType, minAttack?:number, maxAttack?:number, 
       attackSpeed?:number, moveSpeed?:number, range?:number) {
       super(name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range);
-      this.wave = wave;
-      this.reward = reward;
+      this.wave = wave || 0;
+      this.reward = reward || 0;
     }
 
     public copyFrom(other:WaveUnit) {

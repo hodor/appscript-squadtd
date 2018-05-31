@@ -12,6 +12,7 @@ namespace squadtd {
       this.unitCount = unitCount;
       this.vUnit = new VeteranUnit();
       this.vUnit.copyFrom(unit);
+      this.reward = WaveFacade.GetWaveReward(number);
     }
   }
 }

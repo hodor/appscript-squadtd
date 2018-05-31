@@ -102,15 +102,15 @@ var squadtd;
     var Unit = (function () {
         function Unit(name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
             this.life = 0;
-            this.name = name;
-            this.life = life;
-            this.armorType = armorType;
-            this.attackType = attackType;
-            this.minAttack = minAttack;
-            this.maxAttack = maxAttack;
-            this.attackSpeed = attackSpeed;
-            this.moveSpeed = moveSpeed;
-            this.range = range;
+            this.name = name || '';
+            this.life = life || 0;
+            this.armorType = armorType || squadtd.UnitType.biological;
+            this.attackType = attackType || squadtd.DamageType.chaos;
+            this.minAttack = minAttack || 0;
+            this.maxAttack = maxAttack || 0;
+            this.attackSpeed = attackSpeed || 0;
+            this.moveSpeed = moveSpeed || 0;
+            this.range = range || 0;
         }
         Unit.prototype.DPS = function () {
             return squadtd.Calculator.DPS(this.minAttack, this.maxAttack, this.attackSpeed);
@@ -136,8 +136,8 @@ var squadtd;
         __extends(WaveUnit, _super);
         function WaveUnit(name, wave, reward, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) {
             var _this = _super.call(this, name, life, armorType, attackType, minAttack, maxAttack, attackSpeed, moveSpeed, range) || this;
-            _this.wave = wave;
-            _this.reward = reward;
+            _this.wave = wave || 0;
+            _this.reward = reward || 0;
             return _this;
         }
         WaveUnit.prototype.copyFrom = function (other) {
@@ -185,6 +185,135 @@ var squadtd;
     }());
     squadtd.WaveFacade = WaveFacade;
 })(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var Importer = (function () {
+        function Importer(sheet, stringValues, startCol, startRow, numCols, numRows) {
+            this.maxRowDepth = 200;
+            this.maxColDepth = this.maxRowDepth;
+            this.headerRow = -1;
+            this.headerColDict = {};
+            this.lastRow = 1;
+            var cStart = startCol || 1;
+            var rStart = startRow || 1;
+            var colCount = numCols || this.maxColDepth;
+            var rowCount = numRows || this.maxRowDepth;
+            this.RangeData = sheet.getRange(cStart, rStart, colCount, rowCount);
+            this.ValueData = this.RangeData.getValues();
+            for (var key in stringValues) {
+                var name = stringValues[key];
+                loopY: for (var y = 0; y < this.ValueData.length; y++) {
+                    for (var x = 0; x < this.ValueData[y].length; x++) {
+                        var val = this.ValueData[y][x];
+                        if (typeof val === 'string') {
+                            if (val.toUpperCase() === name.toUpperCase()) {
+                                this.headerColDict[name] = x;
+                                if (this.headerRow == -1) {
+                                    this.headerRow = y;
+                                }
+                                if (y != this.headerRow) {
+                                    throw 'Found header in different rows!';
+                                }
+                                break loopY;
+                            }
+                        }
+                    }
+                }
+            }
+            for (var y = this.headerRow + 1; y < rowCount + this.headerRow; y++) {
+                var val = this.ValueData[y][0];
+                if (val == '' || val == null || val == undefined) {
+                    this.lastRow = y;
+                    break;
+                }
+            }
+        }
+        Importer.prototype.getCol = function (name) {
+            return this.headerColDict[name];
+        };
+        return Importer;
+    }());
+    squadtd.Importer = Importer;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var WColNames;
+    (function (WColNames) {
+        WColNames["number"] = "Number";
+        WColNames["name"] = "Name";
+        WColNames["waveReward"] = "Wave Prize";
+        WColNames["unitReward"] = "Unit Prize";
+        WColNames["unitCount"] = "Units";
+        WColNames["unitType"] = "Defense Type";
+        WColNames["unitAttack"] = "Attack Type";
+        WColNames["unitLife"] = "Life";
+        WColNames["unitMove"] = "Move Speed";
+        WColNames["unitRange"] = "Range";
+        WColNames["unitAtkMin"] = "Attack Min";
+        WColNames["unitAtkMax"] = "Attack Max";
+        WColNames["unitAtkSpeed"] = "Speed";
+    })(WColNames = squadtd.WColNames || (squadtd.WColNames = {}));
+    var WaveImporter = (function (_super) {
+        __extends(WaveImporter, _super);
+        function WaveImporter(sheet) {
+            return _super.call(this, sheet, WColNames) || this;
+        }
+        WaveImporter.prototype.loadAllData = function () {
+            var waves = new Array();
+            for (var row = this.headerRow + 1; row < this.lastRow; row++) {
+                waves.push(this.loadDataAtRow(row));
+            }
+            return waves;
+        };
+        WaveImporter.prototype.loadDataAtRow = function (row) {
+            if (row <= this.headerRow) {
+                return null;
+            }
+            var curRow = this.ValueData[row];
+            var name = curRow[this.getCol(WColNames.name)];
+            var number = curRow[this.getCol(WColNames.number)];
+            var count = curRow[this.getCol(WColNames.unitCount)];
+            var unit = new squadtd.WaveUnit(name);
+            unit.armorType = curRow[this.getCol(WColNames.unitType)];
+            unit.attackSpeed = curRow[this.getCol(WColNames.unitAtkSpeed)];
+            unit.attackType = curRow[this.getCol(WColNames.unitAttack)];
+            unit.life = curRow[this.getCol(WColNames.unitLife)];
+            unit.maxAttack = curRow[this.getCol(WColNames.unitAtkMax)];
+            unit.minAttack = curRow[this.getCol(WColNames.unitAtkMin)];
+            unit.moveSpeed = curRow[this.getCol(WColNames.unitMove)];
+            unit.range = curRow[this.getCol(WColNames.unitRange)];
+            unit.reward = curRow[this.getCol(WColNames.unitReward)];
+            unit.wave = number;
+            var wave = new squadtd.Wave(number, unit, count);
+            return wave;
+        };
+        return WaveImporter;
+    }(squadtd.Importer));
+    squadtd.WaveImporter = WaveImporter;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var WaveData;
+    (function (WaveData) {
+        var waves;
+        var importer;
+        function Init() {
+            if (!SpreadsheetApp)
+                throw 'SpreadsheetApp variable not existant';
+            var importSheet = SpreadsheetApp.getActive().getSheetByName('Waves');
+            if (!importSheet)
+                throw Utilities.formatString('Cannot find spreadsheet named Waves to import');
+            importer = new squadtd.WaveImporter(importSheet);
+            importer.loadAllData();
+        }
+        WaveData.Init = Init;
+    })(WaveData = squadtd.WaveData || (squadtd.WaveData = {}));
+})(squadtd || (squadtd = {}));
+function onOpen() {
+    squadtd.WaveData.Init();
+}
+function onEdit(e) {
+}
 function getBaseDamage(damageType, unitType) {
     squadtd.Validator.Validate([[damageType, 'string'], [unitType, 'string']]);
     return squadtd.Calculator.baseDamage(damageType, unitType);
@@ -331,6 +460,7 @@ var squadtd;
             this.unitCount = unitCount;
             this.vUnit = new squadtd.VeteranUnit();
             this.vUnit.copyFrom(unit);
+            this.reward = squadtd.WaveFacade.GetWaveReward(number);
         }
         return Wave;
     }());

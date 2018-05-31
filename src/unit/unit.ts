@@ -13,15 +13,15 @@ namespace squadtd {
   
     constructor(name?:string, life?:number, armorType?:UnitType, attackType?:DamageType, 
         minAttack?:number, maxAttack?:number, attackSpeed?:number, moveSpeed?:number, range?:number) {
-      this.name = name;
-      this.life = life;
-      this.armorType = armorType;
-      this.attackType = attackType;
-      this.minAttack = minAttack;
-      this.maxAttack = maxAttack;
-      this.attackSpeed = attackSpeed;
-      this.moveSpeed = moveSpeed;
-      this.range = range;
+      this.name = name || '';
+      this.life = life || 0;
+      this.armorType = armorType || UnitType.biological;
+      this.attackType = attackType || DamageType.chaos;
+      this.minAttack = minAttack || 0;
+      this.maxAttack = maxAttack || 0;
+      this.attackSpeed = attackSpeed || 0;
+      this.moveSpeed = moveSpeed || 0;
+      this.range = range || 0;
     }
 
     public DPS():number {
