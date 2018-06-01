@@ -1,11 +1,11 @@
 /// <reference path="solver.ts"/>
 namespace squadtd {
-  export class GreedyAttackDamageSolver extends Solver {
+  export class GreedyAttackSolver extends Solver {
     public getNames(): string[] {
       throw new Error("Method not implemented.");
     }
     public getName(): string {
-      return 'Greedy Attacker Damage Algorithm';
+      return 'Greedy Attack Algorithm';
     }
     public solveWave(number: number): PlayerUnit[] {
       let attacker:WaveUnit = this.waves[number - 1].vUnit;

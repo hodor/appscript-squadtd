@@ -42,7 +42,8 @@ namespace squadtd {
 
       // Put all the solvers we want to test:
       this.solvers = new Array<Solver>();
-      this.solvers.push(new GreedyAttackDamageSolver(this.waves, this.units));
+      this.solvers.push(new GreedyAttackSolver(this.waves, this.units));
+      this.solvers.push(new GreedyDefenseSolver(this.waves, this.units));
 
       this.writeData();
     }
@@ -93,12 +94,13 @@ namespace squadtd {
         // Put all the units in a single column
         let retString:string = '';
         for(let j:number=0; j < units.length; j++) {
-          retString += units[i].name;
+          retString += units[j].name;
           if((j + 1) < units.length){
             retString += ', '
           }
         }
         this.sheet.getRange(row, lastCol).setValue(retString);
+        lastCol ++ ;
       }
     }
   }

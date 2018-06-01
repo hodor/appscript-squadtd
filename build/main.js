@@ -505,49 +505,6 @@ var squadtd;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
-    var Solver = (function () {
-        function Solver(waves, units) {
-            this.waves = waves;
-            this.units = units;
-        }
-        Solver.prototype.getColumns = function () { return 1; };
-        return Solver;
-    }());
-    squadtd.Solver = Solver;
-})(squadtd || (squadtd = {}));
-var squadtd;
-(function (squadtd) {
-    var GreedyAttackDamageSolver = (function (_super) {
-        __extends(GreedyAttackDamageSolver, _super);
-        function GreedyAttackDamageSolver() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        GreedyAttackDamageSolver.prototype.getNames = function () {
-            throw new Error("Method not implemented.");
-        };
-        GreedyAttackDamageSolver.prototype.getName = function () {
-            return 'Greedy Attacker Damage Algorithm';
-        };
-        GreedyAttackDamageSolver.prototype.solveWave = function (number) {
-            var attacker = this.waves[number - 1].vUnit;
-            var bestDps = 0;
-            var bestUnit;
-            for (var i = 0; i < this.units.length; i++) {
-                var unit = this.units[i];
-                var dps = unit.DPS() * squadtd.Calculator.baseDamage(unit.attackType, attacker.armorType);
-                if (dps > bestDps) {
-                    bestDps = dps;
-                    bestUnit = unit;
-                }
-            }
-            return [bestUnit];
-        };
-        return GreedyAttackDamageSolver;
-    }(squadtd.Solver));
-    squadtd.GreedyAttackDamageSolver = GreedyAttackDamageSolver;
-})(squadtd || (squadtd = {}));
-var squadtd;
-(function (squadtd) {
     var OutHeaderData = (function () {
         function OutHeaderData(name, row, col) {
             this.col = 1;
@@ -578,7 +535,8 @@ var squadtd;
                 col++;
             }
             this.solvers = new Array();
-            this.solvers.push(new squadtd.GreedyAttackDamageSolver(this.waves, this.units));
+            this.solvers.push(new squadtd.GreedyAttackSolver(this.waves, this.units));
+            this.solvers.push(new squadtd.GreedyDefenseSolver(this.waves, this.units));
             this.writeData();
         }
         OutputData.prototype.getHeaderCol = function (header) {
@@ -616,12 +574,13 @@ var squadtd;
                 var units = solver.solveWave(wave.number);
                 var retString = '';
                 for (var j = 0; j < units.length; j++) {
-                    retString += units[i].name;
+                    retString += units[j].name;
                     if ((j + 1) < units.length) {
                         retString += ', ';
                     }
                 }
                 this.sheet.getRange(row, lastCol).setValue(retString);
+                lastCol++;
             }
         };
         return OutputData;
@@ -647,6 +606,80 @@ var squadtd;
         }
         Writer.Init = Init;
     })(Writer = squadtd.Writer || (squadtd.Writer = {}));
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var Solver = (function () {
+        function Solver(waves, units) {
+            this.waves = waves;
+            this.units = units;
+        }
+        Solver.prototype.getColumns = function () { return 1; };
+        return Solver;
+    }());
+    squadtd.Solver = Solver;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var GreedyAttackSolver = (function (_super) {
+        __extends(GreedyAttackSolver, _super);
+        function GreedyAttackSolver() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        GreedyAttackSolver.prototype.getNames = function () {
+            throw new Error("Method not implemented.");
+        };
+        GreedyAttackSolver.prototype.getName = function () {
+            return 'Greedy Attack Algorithm';
+        };
+        GreedyAttackSolver.prototype.solveWave = function (number) {
+            var attacker = this.waves[number - 1].vUnit;
+            var bestDps = 0;
+            var bestUnit;
+            for (var i = 0; i < this.units.length; i++) {
+                var unit = this.units[i];
+                var dps = unit.DPS() * squadtd.Calculator.baseDamage(unit.attackType, attacker.armorType);
+                if (dps > bestDps) {
+                    bestDps = dps;
+                    bestUnit = unit;
+                }
+            }
+            return [bestUnit];
+        };
+        return GreedyAttackSolver;
+    }(squadtd.Solver));
+    squadtd.GreedyAttackSolver = GreedyAttackSolver;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var GreedyDefenseSolver = (function (_super) {
+        __extends(GreedyDefenseSolver, _super);
+        function GreedyDefenseSolver() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        GreedyDefenseSolver.prototype.getNames = function () {
+            throw new Error("Method not implemented.");
+        };
+        GreedyDefenseSolver.prototype.getName = function () {
+            return 'Greedy Defense Algorithm';
+        };
+        GreedyDefenseSolver.prototype.solveWave = function (number) {
+            var attacker = this.waves[number - 1].vUnit;
+            var bestSecondsToDie = 0;
+            var bestUnit;
+            for (var i = 0; i < this.units.length; i++) {
+                var unit = this.units[i];
+                var secondsToDie = unit.hp / (attacker.DPS() * squadtd.Calculator.baseDamage(attacker.attackType, unit.armorType));
+                if (secondsToDie > bestSecondsToDie) {
+                    bestSecondsToDie = secondsToDie;
+                    bestUnit = unit;
+                }
+            }
+            return [bestUnit];
+        };
+        return GreedyDefenseSolver;
+    }(squadtd.Solver));
+    squadtd.GreedyDefenseSolver = GreedyDefenseSolver;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
@@ -722,30 +755,6 @@ var squadtd;
         UnitType["mechanical"] = "MECHANICAL";
         UnitType["biological"] = "BIOLOGICAL";
     })(UnitType = squadtd.UnitType || (squadtd.UnitType = {}));
-})(squadtd || (squadtd = {}));
-var squadtd;
-(function (squadtd) {
-    var Wave = (function () {
-        function Wave(number, unit, unitCount) {
-            this.number = number;
-            this.unit = unit;
-            this.unitCount = unitCount;
-            this.vUnit = new squadtd.VeteranUnit();
-            this.vUnit.copyFrom(unit);
-            this.reward = squadtd.WaveFacade.GetWaveReward(number);
-        }
-        Wave.prototype.getMaximumReward = function () {
-            return this.reward + (this.unit.reward * this.unitCount);
-        };
-        Wave.prototype.getTotalHP = function (isVet) {
-            var unitHP = this.unit.hp;
-            if (isVet)
-                unitHP = this.vUnit.hp;
-            return unitHP * this.unitCount;
-        };
-        return Wave;
-    }());
-    squadtd.Wave = Wave;
 })(squadtd || (squadtd = {}));
 var squadtd;
 (function (squadtd) {
@@ -843,4 +852,28 @@ var squadtd;
         return VeteranUnit;
     }(squadtd.WaveUnit));
     squadtd.VeteranUnit = VeteranUnit;
+})(squadtd || (squadtd = {}));
+var squadtd;
+(function (squadtd) {
+    var Wave = (function () {
+        function Wave(number, unit, unitCount) {
+            this.number = number;
+            this.unit = unit;
+            this.unitCount = unitCount;
+            this.vUnit = new squadtd.VeteranUnit();
+            this.vUnit.copyFrom(unit);
+            this.reward = squadtd.WaveFacade.GetWaveReward(number);
+        }
+        Wave.prototype.getMaximumReward = function () {
+            return this.reward + (this.unit.reward * this.unitCount);
+        };
+        Wave.prototype.getTotalHP = function (isVet) {
+            var unitHP = this.unit.hp;
+            if (isVet)
+                unitHP = this.vUnit.hp;
+            return unitHP * this.unitCount;
+        };
+        return Wave;
+    }());
+    squadtd.Wave = Wave;
 })(squadtd || (squadtd = {}));
