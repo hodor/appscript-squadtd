@@ -8,6 +8,7 @@
 function onOpen(){
   squadtd.WaveData.Init();
   squadtd.UnitData.Init();
+  squadtd.Writer.Init();
 }
 
 function onEdit(e:any){

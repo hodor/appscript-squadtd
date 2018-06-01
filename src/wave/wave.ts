@@ -1,10 +1,10 @@
 namespace squadtd {
   export class Wave {
-    protected number:number;
-    protected reward:number;
-    protected unitCount:number;
-    protected unit:WaveUnit;
-    protected vUnit:VeteranUnit;
+    public number:number;
+    public reward:number;
+    public unitCount:number;
+    public unit:WaveUnit;
+    public vUnit:VeteranUnit;
 
     constructor(number:number, unit:WaveUnit, unitCount:number) {
       this.number = number;

@@ -1,5 +1,5 @@
 namespace squadtd {
-  export class HeaderData {
+  export class InHeaderData {
     public name:string;
     public type:string;
     constructor(name:string, type:string){

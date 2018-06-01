@@ -22,15 +22,14 @@ namespace squadtd {
 
     constructor(sheet:GoogleAppsScript.Spreadsheet.Sheet){
       super(sheet, UColNames);
-      this.loadedUnits = new Array<PlayerUnit>();
     }
 
     public loadAllData() {
-      let units:Array<PlayerUnit> = new Array<PlayerUnit>();
+      this.loadedUnits = new Array<PlayerUnit>();
       for(let row:number = this.headerRow + 1; row < this.lastRow; row++){
-        units.push(this.loadDataAtRow(row))
+        this.loadedUnits.push(this.loadDataAtRow(row))
       }
-      return units;
+      return this.loadedUnits;
     }
 
 
@@ -70,7 +69,8 @@ namespace squadtd {
       let atkMax:number     = this.getNumberAt(UColNames.atkMax);
       let speed:number      = this.getNumberAt(UColNames.speed);
 
-      let rowUnit:PlayerUnit = new PlayerUnit(name, cost, baseUnit, hp, mp, type,attack, atkMin, atkMax, speed, moveSpeed, range);
+      // TODO: Go back and add upgrades!
+      let rowUnit:PlayerUnit = new PlayerUnit(name, cost, baseUnit, null, hp, mp, type,attack, atkMin, atkMax, speed, moveSpeed, range);
       Logger.log(Utilities.formatString('Creating unit[%s], which has a base type %s. Armor[%s], Weapon[%s], DPS[%f]', rowUnit.name, baseUnitName, rowUnit.armorType, rowUnit.attackType, rowUnit.DPS()));
       this.loadedUnits.push(rowUnit);
       return rowUnit;
