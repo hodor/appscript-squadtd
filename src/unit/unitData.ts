@@ -1,4 +1,5 @@
 /// <reference path="../data/unitImporter.ts"/>
+/// <reference path="playerUnit.ts"/>
 namespace squadtd {
   export namespace UnitData {
     let units:Array<PlayerUnit>;

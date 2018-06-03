@@ -1,5 +1,10 @@
-/// <reference path="wave/waveFacade.ts"/>
 /// <reference path="wave/waveData.ts"/>
+/// <reference path="unit/unitData.ts"/>
+/// <reference path="calculator.ts"/>
+/// <reference path="output/outputData.ts"/>
+/// <reference path="validator.ts"/>
+/// <reference path="economy/buildOrder.ts"/>
+
 
 //// Objects that hold data
 
@@ -62,12 +67,12 @@ function vetSpeed(ammount:number, wave:number) {
 //// WAVE
 function waveReward(wave:number) {
   squadtd.Validator.Validate([[wave, 'number']]);
-  return squadtd.WaveFacade.GetWaveReward(wave);
+  return squadtd.Wave.GetWaveReward(wave);
 }
 
 function terratron(wave:number){
   squadtd.Validator.Validate([[wave, 'number']]);
-  let terratron:squadtd.WaveUnit = squadtd.WaveFacade.Terratron(wave)
+  let terratron:squadtd.WaveUnit = squadtd.Wave.Terratron(wave)
   let answer:Array<any> = new Array();
   answer.push(new Array());
   answer[0].push(terratron.hp);

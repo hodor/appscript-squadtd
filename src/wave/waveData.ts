@@ -1,4 +1,6 @@
 /// <reference path="../data/waveImporter.ts"/>
+/// <reference path="wave.ts"/>
+
 namespace squadtd {
   export namespace WaveData {
     let waves:Array<Wave>;

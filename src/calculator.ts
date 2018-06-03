@@ -1,3 +1,6 @@
+/// <reference path="types/dmgType.ts"/>
+/// <reference path="types/unitType.ts"/>
+
 namespace squadtd {
   export class Calculator {
     constructor() {

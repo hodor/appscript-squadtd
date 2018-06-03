@@ -1,4 +1,5 @@
 /// <reference path="../data/importer.ts"/>
+/// <reference path="../unit/playerUnit.ts"/>
 namespace squadtd {
   export enum UColNames {
     name = 'Name',

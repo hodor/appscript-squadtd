@@ -1,4 +1,6 @@
 /// <reference path="../data/importer.ts"/>
+/// <reference path="../wave/wave.ts"/>
+
 namespace squadtd {
   export enum WColNames {
     number = 'Number',

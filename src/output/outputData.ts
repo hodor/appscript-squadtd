@@ -1,3 +1,7 @@
+/// <reference path="writer.ts"/>
+/// <reference path="../solver/greedyAttackSolver.ts"/>
+/// <reference path="../solver/greedyDefenseSolver.ts"/>
+
 namespace squadtd {
   export class OutHeaderData {
     public col: number = 1;

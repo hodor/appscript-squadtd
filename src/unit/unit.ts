@@ -1,3 +1,7 @@
+/// <reference path="../types/dmgType.ts"/>
+/// <reference path="../types/unitType.ts"/>
+/// <reference path="../types/effectiveness.ts"/>
+
 namespace squadtd {
   //When working on GAS, we need to make sure that the base class of any child class extends from Object.
   export class Unit {
