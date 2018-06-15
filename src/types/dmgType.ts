@@ -1,9 +1,7 @@
-namespace squadtd {
-  export enum DamageType {
-    normal = 'NORMAL',
-    piercing = 'PIERCING',
-    magic = 'MAGIC',
-    siege = 'SIEGE',
-    chaos = 'CHAOS'
-  }
+export enum DamageType {
+  normal = "NORMAL",
+  piercing = "PIERCING",
+  magic = "MAGIC",
+  siege = "SIEGE",
+  chaos = "CHAOS"
 }

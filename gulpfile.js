@@ -15,7 +15,7 @@ let claspFolders = [];
 
 function getFolders(dir) {
   return fs.readdirSync(dir)
-    .filter(function(file) {
+    .filter(function (file) {
       return fs.statSync(path.join(dir, file)).isDirectory();
     });
 }
@@ -29,35 +29,40 @@ gulp.task('compile', function () {
 });
 
 // NOTE: Invoke help task
-gulp.task('upload', function(done){
+gulp.task('upload', function (done) {
   let cmd = 'clasp';
-  if(isWindows) cmd += '.cmd';
+  if (isWindows) cmd += '.cmd';
 
   finishedCount = 0;
 
-  var tasks = claspFolders.map(function(folder){
-    return spawn(cmd, ['push'], {cwd: claspPath + folder + '/'})
-      .on('close', function(){console.log('finished folder '+folder)})
+  var tasks = claspFolders.map(function (folder) {
+    return spawn(cmd, ['push'], {
+        cwd: claspPath + folder + '/'
+      })
+      .on('close', function () {
+        console.log('finished folder ' + folder)
+      })
   })
   console.log('gonna close upload');
   done();
 });
 
-gulp.task('get-folders', function(){
+gulp.task('get-folders', function () {
   claspFolders = getFolders(claspPath);
   console.log(claspFolders);
 })
 
-gulp.task('copy', function(){
-  var tasks = claspFolders.map(function(folder){
+gulp.task('copy', function () {
+  var tasks = claspFolders.map(function (folder) {
     return gulp.src(claspPath + 'main.js')
       .pipe(gulp.dest(claspPath + folder + '/'))
-  }) 
+  })
 })
 
-gulp.task('deploy', function(){
+gulp.task('deploy', function (done) {
   runSequence('compile',
-              'get-folders',
-              'copy',
-              'upload')
+    'get-folders',
+    'copy',
+    'upload',
+    done)
 });

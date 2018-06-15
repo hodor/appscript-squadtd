@@ -1,79 +1,79 @@
-/// <reference path="wave/waveData.ts"/>
-/// <reference path="unit/unitData.ts"/>
-/// <reference path="calculator.ts"/>
-/// <reference path="output/outputData.ts"/>
-/// <reference path="validator.ts"/>
-/// <reference path="economy/buildOrder.ts"/>
-
-
-//// Objects that hold data
-
+import { WaveData } from "./wave/waveData";
+import { UnitData } from "./unit/unitData";
+import { Writer } from "./output/writer";
+import { Validator } from "./validator";
+import { Calculator } from "./calculator";
+import { Effectiveness } from "./types/effectiveness";
+import { VeteranUnit } from "./unit/veteranUnit";
+import { Wave } from "./wave/wave";
+import { WaveUnit } from "./unit/waveUnit";
 
 //// SPREADSHEET TRIGGERS
-function onOpen(){
-  squadtd.WaveData.Init();
-  squadtd.UnitData.Init();
-  squadtd.Writer.Init();
+function onOpen() {
+  WaveData.Init();
+  UnitData.Init();
+  Writer.Init();
 }
 
-function onEdit(e:any){
-
-}
+function onEdit(e: any) {}
 
 //// DAMAGE
 function getBaseDamage(damageType: string, unitType: string) {
-  squadtd.Validator.Validate([[damageType, 'string'], [unitType,'string']]);
-  return squadtd.Calculator.baseDamage(damageType, unitType);
+  Validator.Validate([[damageType, "string"], [unitType, "string"]]);
+  return Calculator.baseDamage(damageType, unitType);
 }
 
 function getDPS(dmgMin: number, dmgMax: number, speed: number) {
-  squadtd.Validator.Validate([[dmgMin, 'number'], [dmgMax,'number'], [speed, 'number']]);
-  return squadtd.Calculator.DPS(dmgMin, dmgMax, speed);
+  Validator.Validate([
+    [dmgMin, "number"],
+    [dmgMax, "number"],
+    [speed, "number"]
+  ]);
+  return Calculator.DPS(dmgMin, dmgMax, speed);
 }
 
-function getDPSCostBenefit(cost:number, supply:number, dps:number){
-  squadtd.Validator.Validate([[cost, 'number'], [supply,'number'], [dps, 'number']]);
-  return squadtd.Calculator.DPSCostBenefit(cost, supply, dps);
+function getDPSCostBenefit(cost: number, supply: number, dps: number) {
+  Validator.Validate([[cost, "number"], [supply, "number"], [dps, "number"]]);
+  return Calculator.DPSCostBenefit(cost, supply, dps);
 }
 
-function getMostEffective(against:string) {
-  squadtd.Validator.Validate([[against, 'string']]);
-  var types = squadtd.Effectiveness.mostEffectiveAgainst(against);
-  var str = '';
-  for(let i:number = 0; i < types.length; i++) {
+function getMostEffective(against: string) {
+  Validator.Validate([[against, "string"]]);
+  var types = Effectiveness.mostEffectiveAgainst(against);
+  var str = "";
+  for (let i: number = 0; i < types.length; i++) {
     str += types[i];
-    if((i + 1) < types.length)
-      str += ', ';
+    if (i + 1 < types.length) str += ", ";
   }
   return str;
 }
 
 //// VETERAN
-function vetDamage(ammount:number, wave:number) {
-  squadtd.Validator.Validate([[ammount, 'number'], [wave,'number']]);
-  return squadtd.VeteranUnit.GetDamage(ammount, wave);
+function vetDamage(ammount: number, wave: number) {
+  Validator.Validate([[ammount, "number"], [wave, "number"]]);
+  return VeteranUnit.GetDamage(ammount, wave);
 }
 
-function vetLife(ammount:number, wave:number) {
-  squadtd.Validator.Validate([[ammount, 'number'], [wave,'number']]);
-  return squadtd.VeteranUnit.GetHP(ammount, wave);
+function vetLife(ammount: number, wave: number) {
+  Validator.Validate([[ammount, "number"], [wave, "number"]]);
+  return VeteranUnit.GetHP(ammount, wave);
 }
 
-function vetSpeed(ammount:number, wave:number) {
-  squadtd.Validator.Validate([[ammount, 'number'], [wave,'number']]);
-  return squadtd.VeteranUnit.GetSpeed(ammount, wave);
+function vetSpeed(ammount: number, wave: number) {
+  Validator.Validate([[ammount, "number"], [wave, "number"]]);
+  return VeteranUnit.GetSpeed(ammount, wave);
 }
 
 //// WAVE
-function waveReward(wave:number) {
-  squadtd.Validator.Validate([[wave, 'number']]);
-  return squadtd.Wave.GetWaveReward(wave);
+function waveReward(wave: number) {
+  Validator.Validate([[wave, "number"]]);
+  return Wave.GetWaveReward(wave);
 }
 
-function terratron(wave:number){
-  squadtd.Validator.Validate([[wave, 'number']]);
-  let terratron:squadtd.WaveUnit = squadtd.Wave.Terratron(wave)
-  let answer:Array<any> = new Array();
+function terratron(wave: number) {
+  Validator.Validate([[wave, "number"]]);
+  let terratron: WaveUnit = Wave.Terratron(wave);
+  let answer: Array<any> = new Array();
   answer.push(new Array());
   answer[0].push(terratron.hp);
   answer[0].push(terratron.moveSpeed);

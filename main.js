@@ -121,117 +121,6 @@ define("calculator", ["require", "exports", "types/unitType", "types/dmgType"], 
     }());
     exports.Calculator = Calculator;
 });
-define("validator", ["require", "exports"], function (require, exports) {
-    "use strict";
-    exports.__esModule = true;
-    var Validator = (function () {
-        function Validator() {
-        }
-        Validator.IsStringValue = function (value) {
-            return typeof value == "string";
-        };
-        Validator.IsNumberValue = function (value) {
-            return typeof value == "number";
-        };
-        Validator.Validate = function (args) {
-            var count = 1;
-            for (var i = 0; i < args.length; i++) {
-                var argCheck = args[i];
-                if (typeof argCheck[0] != argCheck[1])
-                    throw Utilities.formatString("Argument #%d[%s] is not of type %s", count, argCheck[0], argCheck[1]);
-                count++;
-            }
-        };
-        return Validator;
-    }());
-    exports.Validator = Validator;
-});
-define("data/importer", ["require", "exports"], function (require, exports) {
-    "use strict";
-    exports.__esModule = true;
-    var InHeaderData = (function () {
-        function InHeaderData(name, type) {
-            this.name = name;
-            this.type = type;
-        }
-        return InHeaderData;
-    }());
-    exports.InHeaderData = InHeaderData;
-    var Importer = (function () {
-        function Importer(sheet, stringValues, startCol, startRow, numCols, numRows) {
-            this.maxRowDepth = 200;
-            this.maxColDepth = this.maxRowDepth;
-            this.headerRow = -1;
-            this.headerColDict = {};
-            this.lastRow = 1;
-            this.currentRowNum = -1;
-            this.currentRowData = null;
-            var cStart = startCol || 1;
-            var rStart = startRow || 1;
-            var colCount = numCols || this.maxColDepth;
-            var rowCount = numRows || this.maxRowDepth;
-            this.RangeData = sheet.getRange(cStart, rStart, colCount, rowCount);
-            this.ValueData = this.RangeData.getValues();
-            for (var key in stringValues) {
-                var name_1 = stringValues[key];
-                loopY: for (var y = 0; y < this.ValueData.length; y++) {
-                    for (var x = 0; x < this.ValueData[y].length; x++) {
-                        var val = this.ValueData[y][x];
-                        if (typeof val === "string") {
-                            if (val.toUpperCase() === name_1.toUpperCase()) {
-                                this.headerColDict[name_1] = x;
-                                if (this.headerRow == -1) {
-                                    this.headerRow = y;
-                                }
-                                if (y != this.headerRow) {
-                                    throw "Found header in different rows!";
-                                }
-                                break loopY;
-                            }
-                        }
-                    }
-                }
-            }
-            for (var y = this.headerRow + 1; y < rowCount + this.headerRow; y++) {
-                var val = this.ValueData[y][0];
-                if (val == "" || val == null || val == undefined) {
-                    this.lastRow = y;
-                    break;
-                }
-            }
-        }
-        Importer.prototype.getCol = function (name) {
-            return this.headerColDict[name];
-        };
-        Importer.prototype.setCurrentRow = function (row) {
-            this.currentRowNum = row;
-            this.currentRowData = this.ValueData[row];
-        };
-        Importer.prototype.getStringAt = function (colName, rowNum) {
-            if (rowNum !== undefined)
-                this.setCurrentRow(rowNum);
-            if (!this.currentRowData)
-                throw Utilities.formatString("Could not load column[%s] in row[%s]", colName, rowNum);
-            return this.currentRowData[this.getCol(colName)];
-        };
-        Importer.prototype.getNumberAt = function (colName, rowNum) {
-            if (rowNum !== undefined)
-                this.setCurrentRow(rowNum);
-            if (!this.currentRowData)
-                throw Utilities.formatString("Could not load column[%s] in row[%s]", colName, rowNum);
-            return this.currentRowData[this.getCol(colName)];
-        };
-        Importer.prototype.getDataAt = function (colName, rowNum) {
-            if (rowNum !== undefined)
-                this.setCurrentRow(rowNum);
-            if (!this.currentRowData)
-                throw Utilities.formatString("Could not load column[%s] in row[%s]", colName, rowNum);
-            return this.currentRowData[this.getCol(colName)];
-        };
-        return Importer;
-    }());
-    exports.Importer = Importer;
-});
 define("unit/unit", ["require", "exports", "types/unitType", "types/dmgType", "calculator"], function (require, exports, unitType_2, dmgType_2, calculator_1) {
     "use strict";
     exports.__esModule = true;
@@ -266,100 +155,7 @@ define("unit/unit", ["require", "exports", "types/unitType", "types/dmgType", "c
     }());
     exports.Unit = Unit;
 });
-define("unit/playerUnit", ["require", "exports", "unit/unit"], function (require, exports, unit_1) {
-    "use strict";
-    exports.__esModule = true;
-    var PlayerUnit = (function (_super) {
-        __extends(PlayerUnit, _super);
-        function PlayerUnit(name, cost, baseUnit, upgradesTo, hp, energy, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) {
-            var _this = _super.call(this, name, hp, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) || this;
-            _this.baseUnit = baseUnit || null;
-            _this.upgradeUnits = upgradesTo || new Array();
-            _this.cost = cost || 0;
-            _this.energy = energy || 0;
-            return _this;
-        }
-        PlayerUnit.prototype.getCost = function () {
-            var totalCost = this.cost;
-            if (this.baseUnit)
-                totalCost += this.baseUnit.getCost();
-            return totalCost;
-        };
-        return PlayerUnit;
-    }(unit_1.Unit));
-    exports.PlayerUnit = PlayerUnit;
-});
-define("data/unitImporter", ["require", "exports", "data/importer", "unit/playerUnit"], function (require, exports, importer_1, playerUnit_1) {
-    "use strict";
-    exports.__esModule = true;
-    var UColNames;
-    (function (UColNames) {
-        UColNames["name"] = "Name";
-        UColNames["baseUnit"] = "Base Unit";
-        UColNames["cost"] = "Cost / Upgrade";
-        UColNames["supply"] = "Supply";
-        UColNames["type"] = "Defense Type";
-        UColNames["attack"] = "Attack Type";
-        UColNames["hp"] = "Life";
-        UColNames["mp"] = "Energy";
-        UColNames["moveSpeed"] = "Move Speed";
-        UColNames["range"] = "Range";
-        UColNames["atkMin"] = "Attack Min";
-        UColNames["atkMax"] = "Attack Max";
-        UColNames["speed"] = "Speed";
-    })(UColNames = exports.UColNames || (exports.UColNames = {}));
-    var UnitImporter = (function (_super) {
-        __extends(UnitImporter, _super);
-        function UnitImporter(sheet) {
-            return _super.call(this, sheet, UColNames) || this;
-        }
-        UnitImporter.prototype.loadAllData = function () {
-            this.loadedUnits = new Array();
-            for (var row = this.headerRow + 1; row < this.lastRow; row++) {
-                this.loadedUnits.push(this.loadDataAtRow(row));
-            }
-            return this.loadedUnits;
-        };
-        UnitImporter.prototype.loadDataAtRow = function (row) {
-            if (row <= this.headerRow) {
-                return null;
-            }
-            this.setCurrentRow(row);
-            var name = this.getStringAt(UColNames.name);
-            var baseUnitName = this.getStringAt(UColNames.baseUnit);
-            var baseUnit = null;
-            if (baseUnitName) {
-                for (var i in this.loadedUnits) {
-                    var cUnit = this.loadedUnits[i];
-                    if (cUnit.name.toUpperCase() === baseUnitName.toUpperCase()) {
-                        baseUnit = cUnit;
-                        break;
-                    }
-                }
-            }
-            if (baseUnitName && !baseUnit)
-                throw Utilities.formatString("Unit %s on row %d has the undefined base unit %s. Try moving the %s above the unit %s", name, row, baseUnitName, baseUnitName, name);
-            var cost = this.getNumberAt(UColNames.cost);
-            var supply = this.getNumberAt(UColNames.supply);
-            var type = this.getDataAt(UColNames.type);
-            var attack = this.getDataAt(UColNames.attack);
-            var hp = this.getNumberAt(UColNames.hp);
-            var mp = this.getNumberAt(UColNames.mp);
-            var moveSpeed = this.getNumberAt(UColNames.moveSpeed);
-            var range = this.getNumberAt(UColNames.range);
-            var atkMin = this.getNumberAt(UColNames.atkMin);
-            var atkMax = this.getNumberAt(UColNames.atkMax);
-            var speed = this.getNumberAt(UColNames.speed);
-            var rowUnit = new playerUnit_1.PlayerUnit(name, cost, baseUnit, null, hp, mp, type, attack, atkMin, atkMax, speed, moveSpeed, range);
-            Logger.log(Utilities.formatString("Creating unit[%s], which has a base type %s. Armor[%s], Weapon[%s], DPS[%f]", rowUnit.name, baseUnitName, rowUnit.armorType, rowUnit.attackType, rowUnit.DPS()));
-            this.loadedUnits.push(rowUnit);
-            return rowUnit;
-        };
-        return UnitImporter;
-    }(importer_1.Importer));
-    exports.UnitImporter = UnitImporter;
-});
-define("unit/waveUnit", ["require", "exports", "unit/unit"], function (require, exports, unit_2) {
+define("unit/waveUnit", ["require", "exports", "unit/unit"], function (require, exports, unit_1) {
     "use strict";
     exports.__esModule = true;
     var WaveUnit = (function (_super) {
@@ -376,7 +172,7 @@ define("unit/waveUnit", ["require", "exports", "unit/unit"], function (require, 
             this.reward = other.reward;
         };
         return WaveUnit;
-    }(unit_2.Unit));
+    }(unit_1.Unit));
     exports.WaveUnit = WaveUnit;
 });
 define("unit/veteranUnit", ["require", "exports", "unit/waveUnit"], function (require, exports, waveUnit_1) {
@@ -482,7 +278,93 @@ define("wave/wave", ["require", "exports", "unit/waveUnit", "types/unitType", "t
     }());
     exports.Wave = Wave;
 });
-define("data/waveImporter", ["require", "exports", "wave/wave", "unit/waveUnit", "data/importer"], function (require, exports, wave_1, waveUnit_3, importer_2) {
+define("data/importer", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.__esModule = true;
+    var InHeaderData = (function () {
+        function InHeaderData(name, type) {
+            this.name = name;
+            this.type = type;
+        }
+        return InHeaderData;
+    }());
+    exports.InHeaderData = InHeaderData;
+    var Importer = (function () {
+        function Importer(sheet, stringValues, startCol, startRow, numCols, numRows) {
+            this.maxRowDepth = 200;
+            this.maxColDepth = this.maxRowDepth;
+            this.headerRow = -1;
+            this.headerColDict = {};
+            this.lastRow = 1;
+            this.currentRowNum = -1;
+            this.currentRowData = null;
+            var cStart = startCol || 1;
+            var rStart = startRow || 1;
+            var colCount = numCols || this.maxColDepth;
+            var rowCount = numRows || this.maxRowDepth;
+            this.RangeData = sheet.getRange(cStart, rStart, colCount, rowCount);
+            this.ValueData = this.RangeData.getValues();
+            for (var key in stringValues) {
+                var name_1 = stringValues[key];
+                loopY: for (var y = 0; y < this.ValueData.length; y++) {
+                    for (var x = 0; x < this.ValueData[y].length; x++) {
+                        var val = this.ValueData[y][x];
+                        if (typeof val === "string") {
+                            if (val.toUpperCase() === name_1.toUpperCase()) {
+                                this.headerColDict[name_1] = x;
+                                if (this.headerRow == -1) {
+                                    this.headerRow = y;
+                                }
+                                if (y != this.headerRow) {
+                                    throw "Found header in different rows!";
+                                }
+                                break loopY;
+                            }
+                        }
+                    }
+                }
+            }
+            for (var y = this.headerRow + 1; y < rowCount + this.headerRow; y++) {
+                var val = this.ValueData[y][0];
+                if (val == "" || val == null || val == undefined) {
+                    this.lastRow = y;
+                    break;
+                }
+            }
+        }
+        Importer.prototype.getCol = function (name) {
+            return this.headerColDict[name];
+        };
+        Importer.prototype.setCurrentRow = function (row) {
+            this.currentRowNum = row;
+            this.currentRowData = this.ValueData[row];
+        };
+        Importer.prototype.getStringAt = function (colName, rowNum) {
+            if (rowNum !== undefined)
+                this.setCurrentRow(rowNum);
+            if (!this.currentRowData)
+                throw Utilities.formatString("Could not load column[%s] in row[%s]", colName, rowNum);
+            return this.currentRowData[this.getCol(colName)];
+        };
+        Importer.prototype.getNumberAt = function (colName, rowNum) {
+            if (rowNum !== undefined)
+                this.setCurrentRow(rowNum);
+            if (!this.currentRowData)
+                throw Utilities.formatString("Could not load column[%s] in row[%s]", colName, rowNum);
+            return this.currentRowData[this.getCol(colName)];
+        };
+        Importer.prototype.getDataAt = function (colName, rowNum) {
+            if (rowNum !== undefined)
+                this.setCurrentRow(rowNum);
+            if (!this.currentRowData)
+                throw Utilities.formatString("Could not load column[%s] in row[%s]", colName, rowNum);
+            return this.currentRowData[this.getCol(colName)];
+        };
+        return Importer;
+    }());
+    exports.Importer = Importer;
+});
+define("data/waveImporter", ["require", "exports", "wave/wave", "unit/waveUnit", "data/importer"], function (require, exports, wave_1, waveUnit_3, importer_1) {
     "use strict";
     exports.__esModule = true;
     var WColNames;
@@ -536,68 +418,8 @@ define("data/waveImporter", ["require", "exports", "wave/wave", "unit/waveUnit",
             return wave;
         };
         return WaveImporter;
-    }(importer_2.Importer));
+    }(importer_1.Importer));
     exports.WaveImporter = WaveImporter;
-});
-define("economy/buildOrder", ["require", "exports"], function (require, exports) {
-    "use strict";
-    exports.__esModule = true;
-    var Economy = (function () {
-        function Economy() {
-        }
-        return Economy;
-    }());
-    exports.Economy = Economy;
-});
-define("economy/constants", ["require", "exports"], function (require, exports) {
-    "use strict";
-    exports.__esModule = true;
-    var Economy;
-    (function (Economy) {
-        var Constants;
-        (function (Constants) {
-            var Gas;
-            (function (Gas) {
-                Gas.maxUpgrades = 30;
-                Gas.gasPerUpgrade = 15;
-                Gas.costPerUpgrade = 50;
-                function totalCost(upgradeNum) {
-                    return upgradeNum * Gas.costPerUpgrade;
-                }
-                Gas.totalCost = totalCost;
-            })(Gas = Constants.Gas || (Constants.Gas = {}));
-            var Speed;
-            (function (Speed) {
-                Speed.maxUpgrades = 5;
-                Speed.percentageBoost = 0.4;
-                Speed.addedCostPerUpgrade = 60;
-                function totalCost(upgradeNum) {
-                    return upgradeNum * Speed.addedCostPerUpgrade * totalCost(upgradeNum - 1);
-                }
-                Speed.totalCost = totalCost;
-            })(Speed = Constants.Speed || (Constants.Speed = {}));
-            var Begin;
-            (function (Begin) {
-                Begin.minerals = 200;
-                Begin.gas = 30;
-            })(Begin = Constants.Begin || (Constants.Begin = {}));
-        })(Constants = Economy.Constants || (Economy.Constants = {}));
-    })(Economy = exports.Economy || (exports.Economy = {}));
-});
-define("solver/solver", ["require", "exports"], function (require, exports) {
-    "use strict";
-    exports.__esModule = true;
-    var Solver = (function () {
-        function Solver(waves, units) {
-            this.waves = waves;
-            this.units = units;
-        }
-        Solver.prototype.getColumns = function () {
-            return 1;
-        };
-        return Solver;
-    }());
-    exports.Solver = Solver;
 });
 define("wave/waveData", ["require", "exports", "data/waveImporter"], function (require, exports, waveImporter_1) {
     "use strict";
@@ -625,6 +447,99 @@ define("wave/waveData", ["require", "exports", "data/waveImporter"], function (r
         WaveData.GetWaves = GetWaves;
     })(WaveData = exports.WaveData || (exports.WaveData = {}));
 });
+define("unit/playerUnit", ["require", "exports", "unit/unit"], function (require, exports, unit_2) {
+    "use strict";
+    exports.__esModule = true;
+    var PlayerUnit = (function (_super) {
+        __extends(PlayerUnit, _super);
+        function PlayerUnit(name, cost, baseUnit, upgradesTo, hp, energy, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) {
+            var _this = _super.call(this, name, hp, armorType, attackType, minAtk, maxAtk, atkSpeed, moveSpeed, range) || this;
+            _this.baseUnit = baseUnit || null;
+            _this.upgradeUnits = upgradesTo || new Array();
+            _this.cost = cost || 0;
+            _this.energy = energy || 0;
+            return _this;
+        }
+        PlayerUnit.prototype.getCost = function () {
+            var totalCost = this.cost;
+            if (this.baseUnit)
+                totalCost += this.baseUnit.getCost();
+            return totalCost;
+        };
+        return PlayerUnit;
+    }(unit_2.Unit));
+    exports.PlayerUnit = PlayerUnit;
+});
+define("data/unitImporter", ["require", "exports", "data/importer", "unit/playerUnit"], function (require, exports, importer_2, playerUnit_1) {
+    "use strict";
+    exports.__esModule = true;
+    var UColNames;
+    (function (UColNames) {
+        UColNames["name"] = "Name";
+        UColNames["baseUnit"] = "Base Unit";
+        UColNames["cost"] = "Cost / Upgrade";
+        UColNames["supply"] = "Supply";
+        UColNames["type"] = "Defense Type";
+        UColNames["attack"] = "Attack Type";
+        UColNames["hp"] = "Life";
+        UColNames["mp"] = "Energy";
+        UColNames["moveSpeed"] = "Move Speed";
+        UColNames["range"] = "Range";
+        UColNames["atkMin"] = "Attack Min";
+        UColNames["atkMax"] = "Attack Max";
+        UColNames["speed"] = "Speed";
+    })(UColNames = exports.UColNames || (exports.UColNames = {}));
+    var UnitImporter = (function (_super) {
+        __extends(UnitImporter, _super);
+        function UnitImporter(sheet) {
+            return _super.call(this, sheet, UColNames) || this;
+        }
+        UnitImporter.prototype.loadAllData = function () {
+            this.loadedUnits = new Array();
+            for (var row = this.headerRow + 1; row < this.lastRow; row++) {
+                this.loadedUnits.push(this.loadDataAtRow(row));
+            }
+            return this.loadedUnits;
+        };
+        UnitImporter.prototype.loadDataAtRow = function (row) {
+            if (row <= this.headerRow) {
+                return null;
+            }
+            this.setCurrentRow(row);
+            var name = this.getStringAt(UColNames.name);
+            var baseUnitName = this.getStringAt(UColNames.baseUnit);
+            var baseUnit = null;
+            if (baseUnitName) {
+                for (var i in this.loadedUnits) {
+                    var cUnit = this.loadedUnits[i];
+                    if (cUnit.name.toUpperCase() === baseUnitName.toUpperCase()) {
+                        baseUnit = cUnit;
+                        break;
+                    }
+                }
+            }
+            if (baseUnitName && !baseUnit)
+                throw Utilities.formatString("Unit %s on row %d has the undefined base unit %s. Try moving the %s above the unit %s", name, row, baseUnitName, baseUnitName, name);
+            var cost = this.getNumberAt(UColNames.cost);
+            var supply = this.getNumberAt(UColNames.supply);
+            var type = this.getDataAt(UColNames.type);
+            var attack = this.getDataAt(UColNames.attack);
+            var hp = this.getNumberAt(UColNames.hp);
+            var mp = this.getNumberAt(UColNames.mp);
+            var moveSpeed = this.getNumberAt(UColNames.moveSpeed);
+            var range = this.getNumberAt(UColNames.range);
+            var atkMin = this.getNumberAt(UColNames.atkMin);
+            var atkMax = this.getNumberAt(UColNames.atkMax);
+            var speed = this.getNumberAt(UColNames.speed);
+            var rowUnit = new playerUnit_1.PlayerUnit(name, cost, baseUnit, null, hp, mp, type, attack, atkMin, atkMax, speed, moveSpeed, range);
+            Logger.log(Utilities.formatString("Creating unit[%s], which has a base type %s. Armor[%s], Weapon[%s], DPS[%f]", rowUnit.name, baseUnitName, rowUnit.armorType, rowUnit.attackType, rowUnit.DPS()));
+            this.loadedUnits.push(rowUnit);
+            return rowUnit;
+        };
+        return UnitImporter;
+    }(importer_2.Importer));
+    exports.UnitImporter = UnitImporter;
+});
 define("unit/unitData", ["require", "exports", "data/unitImporter"], function (require, exports, unitImporter_1) {
     "use strict";
     exports.__esModule = true;
@@ -650,6 +565,21 @@ define("unit/unitData", ["require", "exports", "data/unitImporter"], function (r
         }
         UnitData.GetUnits = GetUnits;
     })(UnitData = exports.UnitData || (exports.UnitData = {}));
+});
+define("solver/solver", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.__esModule = true;
+    var Solver = (function () {
+        function Solver(waves, units) {
+            this.waves = waves;
+            this.units = units;
+        }
+        Solver.prototype.getColumns = function () {
+            return 1;
+        };
+        return Solver;
+    }());
+    exports.Solver = Solver;
 });
 define("solver/greedyAttackSolver", ["require", "exports", "calculator", "solver/solver"], function (require, exports, calculator_2, solver_1) {
     "use strict";
@@ -829,6 +759,31 @@ define("output/writer", ["require", "exports", "output/outputData"], function (r
     }());
     exports.Writer = Writer;
 });
+define("validator", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.__esModule = true;
+    var Validator = (function () {
+        function Validator() {
+        }
+        Validator.IsStringValue = function (value) {
+            return typeof value == "string";
+        };
+        Validator.IsNumberValue = function (value) {
+            return typeof value == "number";
+        };
+        Validator.Validate = function (args) {
+            var count = 1;
+            for (var i = 0; i < args.length; i++) {
+                var argCheck = args[i];
+                if (typeof argCheck[0] != argCheck[1])
+                    throw Utilities.formatString("Argument #%d[%s] is not of type %s", count, argCheck[0], argCheck[1]);
+                count++;
+            }
+        };
+        return Validator;
+    }());
+    exports.Validator = Validator;
+});
 define("types/effectiveness", ["require", "exports", "calculator", "types/dmgType", "types/unitType"], function (require, exports, calculator_4, dmgType_4, unitType_4) {
     "use strict";
     exports.__esModule = true;
@@ -883,4 +838,115 @@ define("types/effectiveness", ["require", "exports", "calculator", "types/dmgTyp
         return Effectiveness;
     }());
     exports.Effectiveness = Effectiveness;
+});
+define("main", ["require", "exports", "wave/waveData", "unit/unitData", "output/writer", "validator", "calculator", "types/effectiveness", "unit/veteranUnit", "wave/wave"], function (require, exports, waveData_2, unitData_2, writer_1, validator_1, calculator_5, effectiveness_1, veteranUnit_2, wave_2) {
+    "use strict";
+    exports.__esModule = true;
+    function onOpen() {
+        waveData_2.WaveData.Init();
+        unitData_2.UnitData.Init();
+        writer_1.Writer.Init();
+    }
+    function onEdit(e) { }
+    function getBaseDamage(damageType, unitType) {
+        validator_1.Validator.Validate([[damageType, "string"], [unitType, "string"]]);
+        return calculator_5.Calculator.baseDamage(damageType, unitType);
+    }
+    function getDPS(dmgMin, dmgMax, speed) {
+        validator_1.Validator.Validate([
+            [dmgMin, "number"],
+            [dmgMax, "number"],
+            [speed, "number"]
+        ]);
+        return calculator_5.Calculator.DPS(dmgMin, dmgMax, speed);
+    }
+    function getDPSCostBenefit(cost, supply, dps) {
+        validator_1.Validator.Validate([[cost, "number"], [supply, "number"], [dps, "number"]]);
+        return calculator_5.Calculator.DPSCostBenefit(cost, supply, dps);
+    }
+    function getMostEffective(against) {
+        validator_1.Validator.Validate([[against, "string"]]);
+        var types = effectiveness_1.Effectiveness.mostEffectiveAgainst(against);
+        var str = "";
+        for (var i = 0; i < types.length; i++) {
+            str += types[i];
+            if (i + 1 < types.length)
+                str += ", ";
+        }
+        return str;
+    }
+    function vetDamage(ammount, wave) {
+        validator_1.Validator.Validate([[ammount, "number"], [wave, "number"]]);
+        return veteranUnit_2.VeteranUnit.GetDamage(ammount, wave);
+    }
+    function vetLife(ammount, wave) {
+        validator_1.Validator.Validate([[ammount, "number"], [wave, "number"]]);
+        return veteranUnit_2.VeteranUnit.GetHP(ammount, wave);
+    }
+    function vetSpeed(ammount, wave) {
+        validator_1.Validator.Validate([[ammount, "number"], [wave, "number"]]);
+        return veteranUnit_2.VeteranUnit.GetSpeed(ammount, wave);
+    }
+    function waveReward(wave) {
+        validator_1.Validator.Validate([[wave, "number"]]);
+        return wave_2.Wave.GetWaveReward(wave);
+    }
+    function terratron(wave) {
+        validator_1.Validator.Validate([[wave, "number"]]);
+        var terratron = wave_2.Wave.Terratron(wave);
+        var answer = new Array();
+        answer.push(new Array());
+        answer[0].push(terratron.hp);
+        answer[0].push(terratron.moveSpeed);
+        answer[0].push(terratron.range);
+        answer[0].push(terratron.minAttack);
+        answer[0].push(terratron.maxAttack);
+        answer[0].push(terratron.attackSpeed);
+        return answer;
+    }
+});
+define("economy/buildOrder", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.__esModule = true;
+    var Economy = (function () {
+        function Economy() {
+        }
+        return Economy;
+    }());
+    exports.Economy = Economy;
+});
+define("economy/constants", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.__esModule = true;
+    var Economy;
+    (function (Economy) {
+        var Constants;
+        (function (Constants) {
+            var Gas;
+            (function (Gas) {
+                Gas.maxUpgrades = 30;
+                Gas.gasPerUpgrade = 15;
+                Gas.costPerUpgrade = 50;
+                function totalCost(upgradeNum) {
+                    return upgradeNum * Gas.costPerUpgrade;
+                }
+                Gas.totalCost = totalCost;
+            })(Gas = Constants.Gas || (Constants.Gas = {}));
+            var Speed;
+            (function (Speed) {
+                Speed.maxUpgrades = 5;
+                Speed.percentageBoost = 0.4;
+                Speed.addedCostPerUpgrade = 60;
+                function totalCost(upgradeNum) {
+                    return upgradeNum * Speed.addedCostPerUpgrade * totalCost(upgradeNum - 1);
+                }
+                Speed.totalCost = totalCost;
+            })(Speed = Constants.Speed || (Constants.Speed = {}));
+            var Begin;
+            (function (Begin) {
+                Begin.minerals = 200;
+                Begin.gas = 30;
+            })(Begin = Constants.Begin || (Constants.Begin = {}));
+        })(Constants = Economy.Constants || (Economy.Constants = {}));
+    })(Economy = exports.Economy || (exports.Economy = {}));
 });

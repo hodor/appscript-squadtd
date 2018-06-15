@@ -1,11 +1,12 @@
 {
     "compilerOptions": {
         "outFile": "./build/main.js",
-        "lib": ["ES2015"],
-        "target": "ES3",
+        "lib": ["es2015", "dom", "es5"],
+        "target": "es3",
+        "module": "amd",
+        "moduleResolution": "node",
         "noImplicitAny": true,
         "strictNullChecks": false,
-        "importHelpers": true,
         "alwaysStrict": true,
         "suppressImplicitAnyIndexErrors": true,
         "noImplicitReturns": true,
