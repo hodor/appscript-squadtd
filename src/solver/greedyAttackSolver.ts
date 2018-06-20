@@ -5,17 +5,19 @@ namespace squadtd {
       throw new Error("Method not implemented.");
     }
     public getName(): string {
-      return 'Greedy Attack Algorithm';
+      return "Greedy Attack Algorithm";
     }
     public solveWave(number: number): PlayerUnit[] {
-      let attacker:WaveUnit = this.waves[number - 1].vUnit;
+      let attacker: WaveUnit = this.waves[number - 1].vUnit;
 
-      let bestDps:number = 0;
+      let bestDps: number = 0;
       let bestUnit;
-      for(let i = 0; i < this.units.length; i++) {
-        let unit:PlayerUnit = this.units[i];
-        let dps = unit.DPS() * Calculator.baseDamage(unit.attackType, attacker.armorType);
-        if(dps > bestDps) {
+      for (let i = 0; i < this.units.length; i++) {
+        let unit: PlayerUnit = this.units[i];
+        let dps =
+          unit.DPS() *
+          Calculator.baseDamage(unit.attackType, attacker.armorType);
+        if (dps > bestDps) {
           bestDps = dps;
           bestUnit = unit;
         }

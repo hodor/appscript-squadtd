@@ -6,8 +6,8 @@ namespace squadtd {
   export class OutHeaderData {
     public col: number = 1;
     public row: number = 1;
-    public name: string = '';
-    constructor(name: string, row:number, col:number) {
+    public name: string = "";
+    constructor(name: string, row: number, col: number) {
       this.name = name;
       this.col = col;
       this.row = row;
@@ -15,9 +15,9 @@ namespace squadtd {
   }
 
   export enum OutputHeader {
-    waveNumber = 'Wave Number',
-    waveUnitCount = 'Wave Size',
-    waveUnit = 'Wave Unit',
+    waveNumber = "Wave Number",
+    waveUnitCount = "Wave Size",
+    waveUnit = "Wave Unit"
   }
 
   export class OutputData {
@@ -28,7 +28,7 @@ namespace squadtd {
     protected units: Array<PlayerUnit>;
 
     // To know where to put what
-    protected outDataDict = {}
+    protected outDataDict = {};
 
     // All the solvers that we're going to use
     protected solvers: Array<Solver>;
@@ -40,7 +40,11 @@ namespace squadtd {
 
       let col = 1;
       for (let key in OutputHeader) {
-        this.outDataDict[OutputHeader[key]] = new OutHeaderData(OutputHeader[key], 1, col);
+        this.outDataDict[OutputHeader[key]] = new OutHeaderData(
+          OutputHeader[key],
+          1,
+          col
+        );
         col++;
       }
 
@@ -65,7 +69,7 @@ namespace squadtd {
     public writeHeader(row: number) {
       let col = 0;
       for (let key in OutputHeader) {
-        let data: OutHeaderData = this.outDataDict[OutputHeader[key]]
+        let data: OutHeaderData = this.outDataDict[OutputHeader[key]];
         this.sheet.getRange(row, data.col).setValue(data.name);
         col = data.col;
       }
@@ -85,26 +89,32 @@ namespace squadtd {
     }
 
     public writeWave(wave: Wave, row: number) {
-      this.sheet.getRange(row, this.getHeaderCol(OutputHeader.waveNumber)).setValue(wave.number);
-      this.sheet.getRange(row, this.getHeaderCol(OutputHeader.waveUnitCount)).setValue(wave.unitCount);
-      this.sheet.getRange(row, this.getHeaderCol(OutputHeader.waveUnit)).setValue(wave.unit.name + 's');
+      this.sheet
+        .getRange(row, this.getHeaderCol(OutputHeader.waveNumber))
+        .setValue(wave.number);
+      this.sheet
+        .getRange(row, this.getHeaderCol(OutputHeader.waveUnitCount))
+        .setValue(wave.unitCount);
+      this.sheet
+        .getRange(row, this.getHeaderCol(OutputHeader.waveUnit))
+        .setValue(wave.unit.name + "s");
 
       let lastCol = this.getHeaderCol(OutputHeader.waveUnit) + 1;
       // Now add the unit for each solver.
       for (let i in this.solvers) {
         let solver: Solver = this.solvers[i];
-        let units:PlayerUnit[] = solver.solveWave(wave.number);
+        let units: PlayerUnit[] = solver.solveWave(wave.number);
 
         // Put all the units in a single column
-        let retString:string = '';
-        for(let j:number=0; j < units.length; j++) {
+        let retString: string = "";
+        for (let j: number = 0; j < units.length; j++) {
           retString += units[j].name;
-          if((j + 1) < units.length){
-            retString += ', '
+          if (j + 1 < units.length) {
+            retString += ", ";
           }
         }
         this.sheet.getRange(row, lastCol).setValue(retString);
-        lastCol ++ ;
+        lastCol++;
       }
     }
   }

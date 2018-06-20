@@ -2,18 +2,23 @@
 /// <reference path="playerUnit.ts"/>
 namespace squadtd {
   export namespace UnitData {
-    let units:Array<PlayerUnit>;
-    const spreadsheetName:string = 'Units';
-    let importer:Importer;
+    let units: Array<PlayerUnit>;
+    const spreadsheetName: string = "Units";
+    let importer: Importer;
 
-    export function Init(){
-      if(!SpreadsheetApp)
-        throw 'SpreadsheetApp variable not existant';
+    export function Init() {
+      if (!SpreadsheetApp) throw "SpreadsheetApp variable not existant";
 
-      let importSheet:GoogleAppsScript.Spreadsheet.Sheet = SpreadsheetApp.getActive().getSheetByName(spreadsheetName);
-      
-      if(!importSheet){
-        Logger.log(Utilities.formatString('Cannot find spreadsheet named Waves to import'));
+      let importSheet: GoogleAppsScript.Spreadsheet.Sheet = SpreadsheetApp.getActive().getSheetByName(
+        spreadsheetName
+      );
+
+      if (!importSheet) {
+        Logger.log(
+          Utilities.formatString(
+            "Cannot find spreadsheet named Waves to import"
+          )
+        );
         return;
       }
 
@@ -21,7 +26,7 @@ namespace squadtd {
       units = importer.loadAllData();
     }
 
-    export function GetUnits(){
+    export function GetUnits() {
       return units;
     }
   }

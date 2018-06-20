@@ -3,18 +3,23 @@
 
 namespace squadtd {
   export namespace WaveData {
-    let waves:Array<Wave>;
-    const spreadsheetName:string = 'Waves';
-    let importer:Importer;
+    let waves: Array<Wave>;
+    const spreadsheetName: string = "Waves";
+    let importer: Importer;
 
-    export function Init(){
-      if(!SpreadsheetApp)
-        throw 'SpreadsheetApp variable not existant';
+    export function Init() {
+      if (!SpreadsheetApp) throw "SpreadsheetApp variable not existant";
 
-      let importSheet:GoogleAppsScript.Spreadsheet.Sheet = SpreadsheetApp.getActive().getSheetByName(spreadsheetName);
-      
-      if(!importSheet){
-        Logger.log(Utilities.formatString('Cannot find spreadsheet named Waves to import'));
+      let importSheet: GoogleAppsScript.Spreadsheet.Sheet = SpreadsheetApp.getActive().getSheetByName(
+        spreadsheetName
+      );
+
+      if (!importSheet) {
+        Logger.log(
+          Utilities.formatString(
+            "Cannot find spreadsheet named Waves to import"
+          )
+        );
         return;
       }
 
@@ -22,7 +27,7 @@ namespace squadtd {
       waves = importer.loadAllData();
     }
 
-    export function GetWaves(){
+    export function GetWaves() {
       return waves;
     }
   }

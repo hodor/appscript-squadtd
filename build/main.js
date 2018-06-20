@@ -848,49 +848,56 @@ function onOpen() {
     squadtd.UnitData.Init();
     squadtd.Writer.Init();
 }
-function onEdit(e) {
-}
+function onEdit(e) { }
 function getBaseDamage(damageType, unitType) {
-    squadtd.Validator.Validate([[damageType, 'string'], [unitType, 'string']]);
+    squadtd.Validator.Validate([[damageType, "string"], [unitType, "string"]]);
     return squadtd.Calculator.baseDamage(damageType, unitType);
 }
 function getDPS(dmgMin, dmgMax, speed) {
-    squadtd.Validator.Validate([[dmgMin, 'number'], [dmgMax, 'number'], [speed, 'number']]);
+    squadtd.Validator.Validate([
+        [dmgMin, "number"],
+        [dmgMax, "number"],
+        [speed, "number"]
+    ]);
     return squadtd.Calculator.DPS(dmgMin, dmgMax, speed);
 }
 function getDPSCostBenefit(cost, supply, dps) {
-    squadtd.Validator.Validate([[cost, 'number'], [supply, 'number'], [dps, 'number']]);
+    squadtd.Validator.Validate([
+        [cost, "number"],
+        [supply, "number"],
+        [dps, "number"]
+    ]);
     return squadtd.Calculator.DPSCostBenefit(cost, supply, dps);
 }
 function getMostEffective(against) {
-    squadtd.Validator.Validate([[against, 'string']]);
+    squadtd.Validator.Validate([[against, "string"]]);
     var types = squadtd.Effectiveness.mostEffectiveAgainst(against);
-    var str = '';
+    var str = "";
     for (var i = 0; i < types.length; i++) {
         str += types[i];
-        if ((i + 1) < types.length)
-            str += ', ';
+        if (i + 1 < types.length)
+            str += ", ";
     }
     return str;
 }
 function vetDamage(ammount, wave) {
-    squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
+    squadtd.Validator.Validate([[ammount, "number"], [wave, "number"]]);
     return squadtd.VeteranUnit.GetDamage(ammount, wave);
 }
 function vetLife(ammount, wave) {
-    squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
+    squadtd.Validator.Validate([[ammount, "number"], [wave, "number"]]);
     return squadtd.VeteranUnit.GetHP(ammount, wave);
 }
 function vetSpeed(ammount, wave) {
-    squadtd.Validator.Validate([[ammount, 'number'], [wave, 'number']]);
+    squadtd.Validator.Validate([[ammount, "number"], [wave, "number"]]);
     return squadtd.VeteranUnit.GetSpeed(ammount, wave);
 }
 function waveReward(wave) {
-    squadtd.Validator.Validate([[wave, 'number']]);
+    squadtd.Validator.Validate([[wave, "number"]]);
     return squadtd.Wave.GetWaveReward(wave);
 }
 function terratron(wave) {
-    squadtd.Validator.Validate([[wave, 'number']]);
+    squadtd.Validator.Validate([[wave, "number"]]);
     var terratron = squadtd.Wave.Terratron(wave);
     var answer = new Array();
     answer.push(new Array());
